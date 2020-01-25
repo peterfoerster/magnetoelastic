@@ -1,5 +1,5 @@
 pkg load nurbs; clf;
-filename = 'magnetoelastic.txt';
+filename = 'magnetoelastic';
 
 [plate] = create_plate();
 

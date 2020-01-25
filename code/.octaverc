@@ -1,0 +1,9 @@
+
+addpath('/home/peter/magnetoelastic/code/geometry', '-begin');
+
+addpath('/home/peter/magnetoelastic/code/iga-mod', '-begin');
+
+addpath('/home/peter/magnetoelastic/code/plot', '-begin');
+
+addpath('/home/peter/magnetoelastic/code/problem-setup', '-begin');
+

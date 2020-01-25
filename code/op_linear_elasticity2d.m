@@ -16,7 +16,7 @@ function varargout = op_linear_elasticity2d (spu, spv, msh, E, nu, G)
 % continue here and build individual terms
   gradu = reshape (spu.shape_function_gradients, spu.ncomp, [], msh.nqn, spu.nsh_max, msh.nel);
   gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], msh.nqn, spv.nsh_max, msh.nel);
-
+keyboard
   ndir = size (gradu, 2);
 
   rows = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);

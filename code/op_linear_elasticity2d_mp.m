@@ -12,7 +12,7 @@
 
 function A = op_linear_elasticity2d_mp (spu, spv, msh, E, nu, G, patch_list)
 
-  if (nargin < 6)
+  if (nargin < 7)
     patch_list = 1:msh.npatch;
   end
 
