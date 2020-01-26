@@ -22,7 +22,7 @@ function A = op_linear_elasticity2d_mp (spu, spv, msh, E, nu, G, patch_list)
 
   ncounter = 0;
   for iptc = patch_list
-    [rs, cs, vs] = op_linear_elasticity2d_tp (spu.sp_patch{iptc}, spv.sp_patch{iptc}, msh.msh_patch{iptc}, E, nu, G);
+    [rs, cs, vs] = op_linear_elasticity2d_tp (spu.sp_patch{iptc}, spv.sp_patch{iptc}, msh.msh_patch{iptc}, E, nu, G, iptc);
     rows(ncounter+(1:numel (rs))) = spv.gnum{iptc}(rs);
     cols(ncounter+(1:numel (rs))) = spu.gnum{iptc}(cs);
     vals(ncounter+(1:numel (rs))) = vs;

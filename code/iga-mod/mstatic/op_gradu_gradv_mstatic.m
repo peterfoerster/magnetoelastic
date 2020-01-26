@@ -29,7 +29,7 @@ function varargout = op_gradu_gradv_mstatic (spu, spv, msh, coeff)
   ncounter = 0;
   for iel = 1:msh.nel
     if (all (msh.jacdet(:, iel)))
-      % gradu_iel (ndim,nqn,1,nsh)
+      % gradu_iel (ndim x nqn x 1 x nsh)
       gradu_iel = reshape (gradu(:,:,:,1:spu.nsh(iel),iel), spu.ncomp*ndir, msh.nqn, 1, spu.nsh(iel));
       gradv_iel = reshape (gradv(:,:,:,1:spv.nsh(iel),iel), spv.ncomp*ndir, msh.nqn, spv.nsh(iel), 1);
 
@@ -40,7 +40,7 @@ function varargout = op_gradu_gradv_mstatic (spu, spv, msh, coeff)
       % nu11*u_x2*v_x2 + nu22*u_x1*v_x1
       jacdet_gradu11 = bsxfun (@times, jacdet_iel.*nu22, gradu_iel(1,:,:,:));
       jacdet_gradu22 = bsxfun (@times, jacdet_iel.*nu11, gradu_iel(2,:,:,:));
-
+keyboard
       tmp11 = bsxfun (@times, jacdet_gradu11, gradv_iel(1,:,:,:));
       tmp22 = bsxfun (@times, jacdet_gradu22, gradv_iel(2,:,:,:));
 

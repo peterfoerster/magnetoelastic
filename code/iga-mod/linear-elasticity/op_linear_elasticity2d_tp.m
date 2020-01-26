@@ -12,13 +12,13 @@
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
 
-function varargout = op_linear_elasticity2d_tp (space1, space2, msh, E, nu, G)
+function varargout = op_linear_elasticity2d_tp (space1, space2, msh, E, nu, G, iptc)
 
   A = spalloc (space2.ndof, space1.ndof, 5*space1.ndof);
 
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
-    % only compute gradient?
+
     sp1_col = sp_evaluate_col (space1, msh_col, 'value', false, 'gradient', true);
     sp2_col = sp_evaluate_col (space2, msh_col, 'value', false, 'gradient', true);
 
@@ -26,16 +26,16 @@ function varargout = op_linear_elasticity2d_tp (space1, space2, msh, E, nu, G)
       x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
     for iE=1:numel(E)
-      E{iE} = E{iE} (x{:}, iptc);
+      E_iel{iE} = E{iE} (x{:}, iptc);
     end
     for inu=1:numel(nu)
-      nu{inu} = nu{inu} (x{:}, iptc);
+      nu_iel{inu} = nu{inu} (x{:}, iptc);
     end
     for iG=1:numel(G)
-      G{iG} = G{iG} (x{:}, iptc);
+      G_iel{iG} = G{iG} (x{:}, iptc);
     end
 
-    A = A + op_linear_elasticity2d (sp1_col, sp2_col, msh_col, E, nu, G);
+    A = A + op_linear_elasticity2d (sp1_col, sp2_col, msh_col, E_iel, nu_iel, G_iel);
   end
 
   if (nargout == 1)

@@ -1,4 +1,4 @@
-function [nu] = compute_nu (x, y, iptc, nu)
+function [nu] = compute_nu_mag (x, y, iptc, nu)
    switch (iptc)
       case {5}
          % anisotropic
