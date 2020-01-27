@@ -1,4 +1,4 @@
-function [f] = compute_source (x, y, iptc, coils)
+function [f] = compute_f_mag (x, y, iptc, coils)
    % compute homogeneous current densities
    Ab_coil = (coils.bur(1)-coils.bll(1))*(coils.bur(2)-coils.bll(2));
    jb = - coils.current/Ab_coil;

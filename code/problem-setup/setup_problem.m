@@ -5,9 +5,9 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    problem_data.drchlt_sides_mag = [1];
 
    % diagonal components of reluctivity tensor in order, as cell array of function handles
-   nu_mag11 = 1/3.77e-6;
-   nu_mag22 = 1/1.012e-6;
-   problem_data.nu_mag = {@(x,y,iptc) compute_nu_mag(x, y, iptc, nu_mag11), @(x,y,iptc) compute_nu_mag(x, y, iptc, nu_mag22)};
+   mu_mag11 = 3.77e-6;
+   mu_mag22 = 1.012e-6;
+   problem_data.nu_mag = {@(x,y,iptc) compute_nu_mag(x, y, iptc, 1/mu_mag11), @(x,y,iptc) compute_nu_mag(x, y, iptc, 1/mu_mag22)};
 
    % coils defined via rectangles with homogeneous current density
    coils.bll = [0.5 3.5];
@@ -16,7 +16,7 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    coils.tur = [2.5 5];
    % 100 windings with 5 Ampere each
    coils.current = 100*5;
-   problem_data.f_mag = @(x,y,iptc) compute_source(x, y, iptc, coils);
+   problem_data.f_mag = @(x,y,iptc) compute_f_mag(x, y, iptc, coils);
    problem_data.g_mag = @(x,y,ib) zeros(size(x));
    problem_data.h_mag = @(x,y,ib) zeros(size(x));
 
@@ -30,6 +30,8 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    % E2        = 2.27e10;
    % nu_mech12 = 0.429;
    % G12       = 1/11*1e11;
+   % somehow given by the magnetic problem?
+   tau       = 8.67e6;
 
    % test case
    E1 = E2   = 1e10;
@@ -42,9 +44,15 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    problem_data.nu_mech = {@(x,y,iptc) compute_nu_mech(x, y, iptc, nu_mech12)};
    problem_data.G       = {@(x,y,iptc) compute_G(x, y, iptc, G12)};
 
-   problem_data.f_mech = @(x,y,iptc) [zeros(size(x)); 1e7*ones(size(x))];
-   problem_data.g_mech = @(x,y,ib) [zeros(size(x)); zeros(size(x))];
+   problem_data.f_mech = @(x,y,iptc) [zeros(size(x)), zeros(size(x))];
+   problem_data.g_mech = @(x,y,ib) compute_tau(x, y, ib, tau);
    problem_data.h_mech = @(x,y,ib) [zeros(size(x)); zeros(size(x))];
+
+   % coupling
+   e11 = 213.3;
+   e21 = -17.66;
+   e62 = 150;
+   problem_data.fc = {@(x,y,iptc) compute_fc(x, y, iptc, f11/mu_mag11), @(x,y,iptc) compute_fc(x, y, iptc, f21/mu_mag11), @(x,y,iptc) compute_fc(x, y, iptc, f62/mu_mag22)};
 
    method_data.degree     = [2 2];
    % degree-1

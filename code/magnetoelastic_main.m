@@ -1,11 +1,11 @@
-pkg load geopdes;
+pkg load geopdes; clf;
 
 geometry_file = 'magnetoelastic';
 
 % plot geometry
-% [geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load ([geometry_file '.txt']);
-% plot_geometry (geometry, boundaries);
-
+[geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load ([geometry_file '_mech.txt']);
+plot_geometry (geometry, boundaries);
+return
 % solve for mvp, displacement
 [problem_data, method_data] = setup_problem (geometry_file);
 
