@@ -1,14 +1,14 @@
 % INPUT:
 %
-%   spv:   object representing the function space (see sp_scalar)
+%   space: object representing the function space (see sp_scalar)
 %   msh:   object defining the domain partition and the quadrature rule (see msh_cartesian)
-%   coeff: function handle to compute the source function
+%   f:     function handle to compute the source function
 %
 % OUTPUT:
 %
 %   rhs: assembled right-hand side
 
-function rhs = op_f_v_tp_mod (space, msh, coeff, iptc)
+function rhs = op_f_v_tp_mod (space, msh, f, iptc)
 
   rhs = zeros (space.ndof, 1);
 
@@ -20,7 +20,7 @@ function rhs = op_f_v_tp_mod (space, msh, coeff, iptc)
       x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
 
-    rhs = rhs + op_f_v (sp_col, msh_col, coeff (x{:}, iptc));
+    rhs = rhs + op_f_v (sp_col, msh_col, f (x{:}, iptc));
   end
 
 end

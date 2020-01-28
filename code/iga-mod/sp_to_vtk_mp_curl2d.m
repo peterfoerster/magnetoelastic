@@ -1,6 +1,6 @@
 % INPUT:
 %
-%     u:           vector of dof weights
+%     A:           vector of dof weights
 %     space:       object representing the space of discrete functions (see sp_multipatch)
 %     geometry:    geometry structure (see geo_load)
 %     npts:        number of points along each parametric direction where to evaluate
@@ -11,7 +11,7 @@
 %
 %    none
 
-function sp_to_vtk_mp_curl2d (u, space, geometry, npts, filename, fieldname)
+function sp_to_vtk_mp_curl2d (A, space, geometry, npts, filename, fieldname)
 
   str1 = cat (2,'<?xml version="1.0"?> \n', ...
 '<VTKFile type="Collection" version="0.1"> \n', ...
@@ -32,7 +32,7 @@ function sp_to_vtk_mp_curl2d (u, space, geometry, npts, filename, fieldname)
 
   fid = fopen (pvd_filename, 'w');
   if (fid < 0)
-    error ('mp_sp_to_vtk: could not open file %s', pvd_filename);
+    error ('sp_to_vtk_mp_curl2d: could not open file %s', pvd_filename);
   end
 
   fprintf (fid, str1);
@@ -43,10 +43,10 @@ function sp_to_vtk_mp_curl2d (u, space, geometry, npts, filename, fieldname)
     filename_patch = cat (2, filename, '_', num2str (iptc));
     fprintf (fid, str2, iptc, filename_patch_without_path);
     if (isempty (space.dofs_ornt))
-      sp_to_vtk_curl2d (u(space.gnum{iptc}), space.sp_patch{iptc}, geometry(iptc), npts, ...
+      sp_to_vtk_curl2d (A(space.gnum{iptc}), space.sp_patch{iptc}, geometry(iptc), npts, ...
                            filename_patch, fieldname)
     else
-      sp_to_vtk (u(space.gnum{iptc}) .* space.dofs_ornt{iptc}', space.sp_patch{iptc}, geometry(iptc), npts, ...
+      sp_to_vtk (A(space.gnum{iptc}) .* space.dofs_ornt{iptc}', space.sp_patch{iptc}, geometry(iptc), npts, ...
                            filename_patch, fieldname)
     end
   end

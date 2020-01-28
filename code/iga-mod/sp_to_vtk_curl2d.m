@@ -1,6 +1,6 @@
 % INPUT:
 %
-%     u:           vector of dof weights
+%     A:           vector of dof weights
 %     space:       object representing the space of discrete functions (see sp_scalar)
 %     geometry:    geometry structure (see geo_load)
 %     npts:        number of points along each parametric direction where to evaluate
@@ -12,12 +12,11 @@
 %
 %    none
 
-function sp_to_vtk_curl2d (u, space, geometry, npts, filename, fieldname)
+function sp_to_vtk_curl2d (A, space, geometry, npts, filename, fieldname)
 
-  % eu = [u_x1; u_x2]
-  [eu, F] = sp_eval (u, space, geometry, npts, 'gradient');
-  % curl(u), if only a z-component is present
-  b = [eu(2,:,:); -eu(1,:,:)];
+  [eA, F] = sp_eval (A, space, geometry, npts, 'gradient');
+  % curl(A), if only a z-component is present
+  b = [eA(2,:,:); -eA(1,:,:)];
 
   msh_to_vtk (F, b, filename, fieldname);
 

@@ -78,8 +78,8 @@ for iopt  = 1:numel (data_names)
 end
 
 % Construct geometry structure
-geometry = mp_geo_load (geo_name);
-geometry = geometry(iptc);
+geometry = mp_geo_load (geo_mec);
+geometry = geometry(5);
 degelev  = max (degree - (geometry.nurbs.order-1), 0);
 nurbs    = nrbdegelev (geometry.nurbs, degelev);
 [rknots, zeta, nknots] = kntrefine (nurbs.knots, nsub-1, nurbs.order-1, regularity);
@@ -100,19 +100,19 @@ clear space_scalar scalar_spaces
 
 % Assemble the matrices
 mat    = op_su_ev_tp_test (sp, sp, msh, lambda_lame, mu_lame);
-rhs    = op_f_v_tp (sp, msh, f_mech);
+rhs    = op_f_v_tp (sp, msh, f_mec);
 
 % Apply Neumann boundary conditions
-for iside = nmnn_sides_mech
+for iside = nmnn_sides_mec
 % Restrict the function handle to the specified side, in any dimension, gside = @(x,y) g(x,y,iside)
-  gside = @(varargin) g_mech(varargin{:},iside);
+  gside = @(varargin) g_mec(varargin{:},iside);
   dofs = sp.boundary(iside).dofs;
   rhs(dofs) = rhs(dofs) + op_f_v_tp (sp.boundary(iside), msh.boundary(iside), gside);
 end
 
 % Apply Dirichlet boundary conditions
 u = zeros (sp.ndof, 1);
-[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (sp, msh, h_mech, drchlt_sides_mech);
+[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (sp, msh, h_mec, drchlt_sides_mec);
 u(drchlt_dofs) = u_drchlt;
 
 int_dofs = setdiff (1:sp.ndof, drchlt_dofs);

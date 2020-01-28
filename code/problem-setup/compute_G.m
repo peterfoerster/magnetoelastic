@@ -1,9 +1,9 @@
-function [G] = compute_G (x, y, iptc, G)
+function [G_iptc] = compute_G (x, y, iptc, G)
    switch (iptc)
       case {5}
          % plate
-         G = G * ones(size(x));
+         G_iptc = G * ones(size(x));
       otherwise
-         G = zeros(size(x));
+         G_iptc = zeros(size(x));
    end%switch
 end

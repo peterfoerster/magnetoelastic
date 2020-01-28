@@ -1,23 +1,23 @@
-% MP_SOLVE_MAGNETOSTATICS_2D: Solve the 2d magnetostatic problem in a multipatch geometry.
+% MP_SOLVE_MAGNETOSTATICS2D: Solve the 2d magnetostatic problem in a multipatch geometry.
 %
 % Function to solve the weak problem
 %
-%     S (nu11*A_x2*At_x2 + nu22*A_x1*At_x1) dx = S (f) dx    in Omega
-%                                            ? = g           on Gamma_N
-%                                            u = h           on Gamma_D
+%     S (1/mu22 * A_x1 * At_x1 + 1/mu11 * A_x2 * At_x2) dx = S (f) dx    in Omega
+%                                                    A x n = g           on Gamma_N
+%                                                        u = h           on Gamma_D
 %
 % where the domain \Omega is formed by several patches of the form F((0,1)^n).
 %
 % INPUT:
 %
 %  problem_data: a structure with data of the problem. It contains the fields:
-%    - geo_name:     name of the file containing the geometry
-%    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
-%    - drchlt_sides: sides with Dirichlet boundary condition
-%    - nu:           magnetic reluctivity as cell array of fuction handles (diagonal components of material tensor)
-%    - f:            source term, one dimensional
-%    - g:            function for Neumann condition (if nmnn_sides is not empty)
-%    - h:            function for Dirichlet boundary condition
+%    - geo_mag:          name of the file containing the geometry
+%    - nmnn_sides_mag:   sides with Neumann boundary condition (may be empty)
+%    - drchlt_sides_mag: sides with Dirichlet boundary condition
+%    - mu:               magnetic permeability as cell array of function handles (diagonal components of material tensor)
+%    - f_mag:            source term (current density), one dimensional
+%    - g_mag:            function for Neumann condition
+%    - h_mag:            function for Dirichlet boundary condition
 %
 %  method_data : a structure with discretization data. Its fields are:
 %    - degree:     degree of the spline functions.
@@ -31,10 +31,9 @@
 %  geometry: array of geometry structures (see geo_load)
 %  msh:      multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
 %  space:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch)
-%  u:        the computed degrees of freedom
-%
+%  A:        the computed degrees of freedom
 
-function [geometry, msh, space, u] = ...
+function [geometry, msh, space, A] = ...
               mp_solve_magnetostatics2d (problem_data, method_data)
 
 % Extract the fields from the data structures into local variables
@@ -48,7 +47,7 @@ for iopt  = 1:numel (data_names)
 end
 
 % Construct geometry structure, and information for interfaces and boundaries
-[geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load (geo_name);
+[geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load (geo_mag);
 npatch = numel (geometry);
 
 msh = cell (1, npatch);
@@ -68,12 +67,12 @@ for iptc = 1:npatch
   sp{iptc} = sp_bspline (knots{iptc}, degree, msh{iptc});
 end
 
-msh = msh_multipatch (msh, boundaries);
+msh   = msh_multipatch (msh, boundaries);
 space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
 clear sp
 
 % Compute and assemble the matrices
-stiff_mat = op_gradu_gradv_mp_mstatic (space, space, msh, nu_mag);
+mat = op_gradu_gradv_mp_ms (space, space, msh, mu);
 rhs = op_f_v_mp_mod (space, msh, f_mag);
 
 % Apply Neumann boundary conditions
@@ -86,14 +85,14 @@ for iref = nmnn_sides_mag
 end
 
 % Apply Dirichlet boundary conditions
-u = zeros (space.ndof, 1);
-[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h_mag, drchlt_sides_mag);
-u(drchlt_dofs) = u_drchlt;
+A = zeros (space.ndof, 1);
+[A_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h_mag, drchlt_sides_mag);
+A(drchlt_dofs) = A_drchlt;
 
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);
-rhs(int_dofs) = rhs(int_dofs) - stiff_mat(int_dofs, drchlt_dofs)*u_drchlt;
+rhs(int_dofs) = rhs(int_dofs) - mat(int_dofs, drchlt_dofs)*A_drchlt;
 
 % Solve the linear system
-u(int_dofs) = stiff_mat(int_dofs, int_dofs) \ rhs(int_dofs);
+A(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
 
 end

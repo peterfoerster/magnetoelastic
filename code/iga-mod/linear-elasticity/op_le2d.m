@@ -12,7 +12,7 @@
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
 
-function varargout = op_linear_elasticity2d (spu, spv, msh, E, nu, G)
+function varargout = op_le2d (spu, spv, msh, E, nu, G)
   % gradu (ncomp x rdim x msh_col.nqn x nsh_max x msh_col.nel)
   gradu = reshape (spu.shape_function_gradients, spu.ncomp, [], msh.nqn, spu.nsh_max, msh.nel);
   gradv = reshape (spv.shape_function_gradients, spv.ncomp, [], msh.nqn, spv.nsh_max, msh.nel);
@@ -66,8 +66,12 @@ function varargout = op_linear_elasticity2d (spu, spv, msh, E, nu, G)
       rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
       cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
       ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
+
+      % catch NaN values
+      idx = isnan(values);
+      values(idx) = 0;
     else
-      warning ('geopdes:jacdet_zero_at_quad_node', 'op_linear_elasticity2d: singular map in element number %d', iel)
+      warning ('geopdes:jacdet_zero_at_quad_node', 'op_le2d: singular map in element number %d', iel)
     end
   end
 
@@ -79,7 +83,7 @@ function varargout = op_linear_elasticity2d (spu, spv, msh, E, nu, G)
     varargout{2} = cols(1:ncounter);
     varargout{3} = values(1:ncounter);
   else
-    error ('op_linear_elasticity2d: wrong number of output arguments')
+    error ('op_le2d: wrong number of output arguments')
   end
 
 end

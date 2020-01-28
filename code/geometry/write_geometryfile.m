@@ -29,5 +29,5 @@ function [] = write_geometryfile (ptcs, filename)
       boundaries(ibnd).nsides = length(boundaries(ibnd).patches);
    end
 
-   nrbexport (ptcs, interfaces, boundaries, [filename '_mech.txt']);
+   nrbexport (ptcs, interfaces, boundaries, [filename '_mec.txt']);
 end
