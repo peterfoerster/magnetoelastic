@@ -1,7 +1,7 @@
 
 addpath('/home/peter/magnetoelastic/code/geometry', '-begin');
 
-addpath('/home/peter/magnetoelastic/code/iga-mod:/home/peter/magnetoelastic/code/iga-mod/linear-elasticity:/home/peter/magnetoelastic/code/iga-mod/magnetostatics:/home/peter/magnetoelastic/code/iga-mod/test', '-begin');
+addpath('/home/peter/magnetoelastic/code/iga-mod:/home/peter/magnetoelastic/code/iga-mod/coupling:/home/peter/magnetoelastic/code/iga-mod/linear-elasticity:/home/peter/magnetoelastic/code/iga-mod/magnetostatics', '-begin');
 
 addpath('/home/peter/magnetoelastic/code/plot', '-begin');
 

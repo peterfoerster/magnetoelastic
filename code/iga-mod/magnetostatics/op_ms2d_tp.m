@@ -12,7 +12,7 @@
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
 
-function varargout = op_gradu_gradv_tp_ms (spA, spAt, msh, mu, iptc)
+function varargout = op_ms2d_tp (spA, spAt, msh, mu, iptc)
 
   mat = spalloc (spAt.ndof, spA.ndof, 3*spA.ndof);
 
@@ -28,7 +28,7 @@ function varargout = op_gradu_gradv_tp_ms (spA, spAt, msh, mu, iptc)
       mu_iel{imu} = mu{imu} (x{:}, iptc);
    end
 
-    mat = mat + op_gradu_gradv_ms (spA_col, spAt_col, msh_col, mu_iel);
+    mat = mat + op_ms2d (spA_col, spAt_col, msh_col, mu_iel);
   end
 
   if (nargout == 1)

@@ -72,7 +72,7 @@ space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
 clear sp
 
 % Compute and assemble the matrices
-mat = op_gradu_gradv_mp_ms (space, space, msh, mu);
+mat = op_ms2d_mp (space, space, msh, mu);
 rhs = op_f_v_mp_mod (space, msh, f_mag);
 
 % Apply Neumann boundary conditions

@@ -10,7 +10,7 @@
 %
 %   mat:    assembled stiffness matrix
 
-function mat = op_gradu_gradv_mp_ms (spA, spAt, msh, mu, patch_list)
+function mat = op_ms2d_mp (spA, spAt, msh, mu, patch_list)
 
   if (nargin < 5)
     patch_list = 1:msh.npatch;
@@ -22,7 +22,7 @@ function mat = op_gradu_gradv_mp_ms (spA, spAt, msh, mu, patch_list)
 
   ncounter = 0;
   for iptc = patch_list
-    [rs, cs, vs] = op_gradu_gradv_tp_ms (spA.sp_patch{iptc}, spAt.sp_patch{iptc}, msh.msh_patch{iptc}, mu, iptc);
+    [rs, cs, vs] = op_ms2d_tp (spA.sp_patch{iptc}, spAt.sp_patch{iptc}, msh.msh_patch{iptc}, mu, iptc);
 
     rows(ncounter+(1:numel (rs))) = spAt.gnum{iptc}(rs);
     cols(ncounter+(1:numel (rs))) = spA.gnum{iptc}(cs);

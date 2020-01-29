@@ -30,15 +30,7 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    E2   = 2.27e10;
    nu12 = 0.429;
    G12  = 1/11*1e11;
-   % should be determined by coupling?
    tau  = 8.67e6;
-
-   % test case
-   % E1 = E2 = 1e10;
-   % nu12    = 0.4;
-   % G12     = E1/(2*(1+nu12));
-   % problem_data.lambda_lame = @(x,y) (nu12*E1)/((1+nu12)*(1-2*nu12))*ones(size(x));
-   % problem_data.mu_lame     = @(x,y) G12*ones(size(x));
 
    problem_data.E  = {@(x,y,iptc) compute_E(x, y, iptc, E1), @(x,y,iptc) compute_E(x, y, iptc, E2)};
    problem_data.nu = {@(x,y,iptc) compute_nu(x, y, iptc, nu12)};
@@ -59,7 +51,7 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    % degree-1
    method_data.regularity = method_data.degree - 1;
    % to be determined by convergence study
-   method_data.nsub       = [8 8];
+   method_data.nsub       = [32 32];
    % degree+1
    method_data.nquad      = method_data.degree + 1;
 end

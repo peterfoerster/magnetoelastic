@@ -12,7 +12,7 @@
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
 
-function varargout = op_gradu_gradv_ms (spA, spAt, msh, mu)
+function varargout = op_ms2d (spA, spAt, msh, mu)
   gradA  = reshape (spA.shape_function_gradients, spA.ncomp, [], ...
 		   msh.nqn, spA.nsh_max, msh.nel);
   gradAt = reshape (spAt.shape_function_gradients, spAt.ncomp, [], ...
