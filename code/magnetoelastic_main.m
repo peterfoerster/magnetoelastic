@@ -19,12 +19,16 @@ fprintf('\ntime elapsed for solution: %d min\n', toc/60);
 figure(1);
 geometry_def = geo_deform_mp (u, space, geometry);
 nrbkntplot(geometry_def(5).nurbs);
+xt = nrbeval(geometry_def(5).nurbs, {1, 1})
+xb = nrbeval(geometry_def(5).nurbs, {1, 0})
 % plot_geometry (geometry_def);
 shading interp; view(2);
 
 % figure(2);
 % geometry_def_test = geo_deform (u_test, space_test, geometry_test);
 % nrbplot (geometry_def_test.nurbs, method_data.nsub.*method_data.nquad);
+% xt = nrbeval(geometry_def_test.nurbs, {1, 1})
+% xb = nrbeval(geometry_def_test.nurbs, {1, 0})
 % shading interp; view(2);
 
 % plot absolute value of magnetic flux density (and write .dat files optionally)

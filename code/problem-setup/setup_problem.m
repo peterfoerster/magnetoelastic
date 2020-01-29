@@ -32,7 +32,6 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    G12  = 1/11*1e11;
    % should be determined by coupling?
    tau  = 8.67e6;
-   % tau  = 8.67e7;
 
    % test case
    % E1 = E2 = 1e10;
@@ -45,9 +44,9 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    problem_data.nu = {@(x,y,iptc) compute_nu(x, y, iptc, nu12)};
    problem_data.G  = {@(x,y,iptc) compute_G(x, y, iptc, G12)};
 
-   problem_data.f_mec = @(x,y,iptc) [zeros(size(x)), zeros(size(x))];
+   problem_data.f_mec = @(x,y,iptc) zeros(2, size(x,1), size(x,2));
    problem_data.g_mec = @(x,y,ib) compute_tau(x, y, ib, tau);
-   problem_data.h_mec = @(x,y,ib) [zeros(size(x)); zeros(size(x))];
+   problem_data.h_mec = @(x,y,ib) zeros(2, size(x,1), size(x,2));
 
    % coupling parameters
    e11 = 213.3;
@@ -60,7 +59,7 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    % degree-1
    method_data.regularity = method_data.degree - 1;
    % to be determined by convergence study
-   method_data.nsub       = [16 16];
+   method_data.nsub       = [8 8];
    % degree+1
    method_data.nquad      = method_data.degree + 1;
 end
