@@ -23,7 +23,7 @@ function varargout = op_le2d (spu, spv, msh, E, nu, G)
   cols = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
   values = zeros (msh.nel * spu.nsh_max * spv.nsh_max, 1);
 
-  % weights in physical space and coefficients
+  % weights and coefficients in physical space
   jacdet_weights = msh.jacdet .* msh.quad_weights;
   E1   = E{1};
   E2   = E{2};
@@ -67,7 +67,7 @@ function varargout = op_le2d (spu, spv, msh, E, nu, G)
       cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
       ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
 
-      % catch NaN values
+      % catch NaN values originating from noninvolved patches
       idx = isnan(values);
       values(idx) = 0;
     else

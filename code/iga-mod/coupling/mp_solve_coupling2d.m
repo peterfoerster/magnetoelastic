@@ -2,27 +2,30 @@
 %
 % Function to solve the problem (check matrix formulation)
 %
+%       matrix:      DoFs:    rhs:
+%     (A     -C)    (u)      (j)
+%     (-C^T   B)    (A)      (0)
 %
-%
-% where A, B, C.
+% where A = a(u,v), B = b(A,At), C = c(v,A) and j is the discrete current density.
 %
 % INPUT:
 %
 %  problem_data: a structure with data of the problem. It contains the fields:
-%    - geo_name:     name of the file containing the geometry
-%    - nmnn_sides:   sides with Neumann boundary condition (may be empty)
-%    - drchlt_sides: sides with Dirichlet boundary condition
-%    - nu_mag:
-%    - f_mag:            source term
-%    - h_mag:            function for Dirichlet boundary condition
-%    - g_mag:            function for Neumann condition (if nmnn_sides is not empty)
-%    - E:            cell array of function handles for Young's modulus
-%    - nu_mech:           Poisson's ratio
-%    - G:            pre-magnetization
-%    - f_mech:            source term
-%    - h_mech:            function for Dirichlet boundary condition
-%    - g_mech:            function for Neumann condition (if nmnn_sides is not empty)
-%    - fc:
+%    - geo_mag/mec:          name of the file containing the geometry
+%    - nmnn_sides_mag/mec:   sides with Neumann boundary condition
+%    - drchlt_sides_mag/mec: sides with Dirichlet boundary condition
+%    - mu:                   magnetic permeability
+%    - f_mag:                magnetic source term (current density)
+%    - g_mag:                function for Neumann condition
+%    - h_mag:                function for Dirichlet boundary condition
+%    - E:                    Young's modulus
+%    - nu:                   Poisson's ratio
+%    - G:                    pre-magnetization
+%    - tau:                  coefficient for Neumann condition
+%    - f_mech:               source term
+%    - g_mech:               function for Neumann condition
+%    - h_mech:               function for Dirichlet boundary condition
+%    - f:                    coupling coefficients
 %
 %  method_data : a structure with discretization data. Its fields are:
 %    - degree:     degree of the spline functions.
@@ -33,80 +36,118 @@
 %
 % OUTPUT:
 %
-%  geometry: array of geometry structures (see geo_load)
-%  msh:      multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
-%  space:    multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch)
-%  u:        the computed degrees of freedom
+%  geometry:      array of geometry structures (see geo_load)
+%  msh_mec/mag:   multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
+%  space_mec/mag: multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch)
+%  u/A:           the computed degrees of freedom
 
-function [geometry, msh, space, u] = ...
-              mp_solve_coupling2d (problem_data, method_data)
-
-% Extract the fields from the data structures into local variables
-data_names = fieldnames (problem_data);
-for iopt  = 1:numel (data_names)
-  eval ([data_names{iopt} '= problem_data.(data_names{iopt});']);
+function [geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_coupling2d (problem_data, method_data)
+data_names=fieldnames(problem_data);
+for iopt=1:numel(data_names)
+   eval ([data_names{iopt} '= problem_data.(data_names{iopt});']);
 end
-data_names = fieldnames (method_data);
-for iopt  = 1:numel (data_names)
-  eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
+data_names=fieldnames(method_data);
+for iopt=1:numel(data_names)
+   eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
 end
 
-% build scalar space first, take care that msh is identical
-% Construct geometry structure, and information for interfaces and boundaries
-[geometry, boundaries, interfaces, ~, boundary_interfaces] = mp_geo_load (geo_mech);
-npatch = numel (geometry);
+[geometry_mag, boundaries_mag, interfaces_mag, ~, boundary_interfaces_mag] = mp_geo_load (geo_mag);
+[geometry_mec, boundaries_mec, interfaces_mec, ~, boundary_interfaces_mec] = mp_geo_load (geo_mec);
+npatch = numel(geometry_mec);
 
-for iptc = 1:npatch
-  degelev  = max (degree - (geometry(iptc).nurbs.order-1), 0);
-  nurbs    = nrbdegelev (geometry(iptc).nurbs, degelev);
-  [rknots, zeta, nknots] = kntrefine (nurbs.knots, nsub-1, nurbs.order-1, regularity);
+% construct spaces
+msh     = cell(1,npatch);
+sp_mag  = cell(1,npatch);
+sp_mec  = cell(1,npatch);
+for iptc=1:npatch
+   degelev = max(degree - (geometry_mec(iptc).nurbs.order-1), 0);
+   nurbs   = nrbdegelev (geometry_mec(iptc).nurbs, degelev);
+   [~, ~, nknots] = kntrefine (nurbs.knots, nsub-1, nurbs.order-1, regularity);
+   nurbs  = geo_load (nrbkntins (nurbs, nknots));
+   fields = fieldnames(nurbs);
+   for ifld=1:numel(fields)
+      geometry_mec(iptc).(fields{ifld}) = nurbs.(fields{ifld});
+   end
 
-  nurbs    = geo_load (nrbkntins (nurbs, nknots));
-  fields   = fieldnames (nurbs);
-  for ifld = 1:numel (fields)
-      geometry(iptc).(fields{ifld}) = nurbs.(fields{ifld});
-  end
+   rule      = msh_gauss_nodes (nquad);
+   [qn, qw]  = msh_set_quad_nodes (geometry_mec(iptc).nurbs.knots, rule);
+   msh{iptc} = msh_cartesian (geometry_mec(iptc).nurbs.knots, qn, qw, geometry_mec(iptc));
 
-% Construct msh structure
-  rule      = msh_gauss_nodes (nquad);
-  [qn, qw]  = msh_set_quad_nodes (geometry(iptc).nurbs.knots, rule);
-  msh{iptc} = msh_cartesian (geometry(iptc).nurbs.knots, qn, qw, geometry(iptc));
+   % magnetic scalar space (grad-preserving)
+   sp_mag{iptc} = sp_bspline (geometry_mec(iptc).nurbs.knots, geometry_mec(iptc).nurbs.order-1, msh{iptc});
 
-% Construct space structure
-  sp_scalar = sp_nurbs (geometry(iptc).nurbs, msh{iptc});
-  scalar_spaces = cell (msh{iptc}.rdim, 1);
-  for idim = 1:msh{iptc}.rdim
-    scalar_spaces{idim} = sp_scalar;
-  end
-  sp{iptc} = sp_vector (scalar_spaces, msh{iptc});
+   % mechanic vector space (grad-preserving)
+   sp_scalar = sp_nurbs (geometry_mec(iptc).nurbs, msh{iptc});
+   scalar_spaces = cell(msh{iptc}.rdim,1);
+   for idim=1:msh{iptc}.rdim
+      scalar_spaces{idim} = sp_scalar;
+   end
+   sp_mec{iptc} = sp_vector (scalar_spaces, msh{iptc});
 end
 
-msh = msh_multipatch (msh, boundaries);
-space = sp_multipatch (sp, msh, interfaces, boundary_interfaces);
-clear sp scalar_spaces
+msh_mag   = msh_multipatch (msh, boundaries_mag);
+space_mag = sp_multipatch (sp_mag, msh_mag, interfaces_mag, boundary_interfaces_mag);
+msh_mec   = msh_multipatch (msh, boundaries_mec);
+space_mec = sp_multipatch (sp_mec, msh_mec, interfaces_mec, boundary_interfaces_mec);
+clear msh sp_mag sp_mec sp scalar_spaces
 
-% Compute and assemble the matrices
-mat = op_linear_elasticity2d_mp (space, space, msh, E, nu_mech, G);
-rhs = op_f_v_mp (space, msh, f_mech);
+% magnetic problem
+B_mat = op_ms2d_mp (space_mag, space_mag, msh_mag, mu);
+rhs_mag = op_f_v_mp_mod (space_mag, msh_mag, f_mag);
 
-% Apply Neumann boundary conditions
-Nbnd = cumsum ([0, boundaries.nsides]);
-for iref = nmnn_sides_mech
-  iref_patch_list = Nbnd(iref)+1:Nbnd(iref+1);
-  gref = @(varargin) g_mech(varargin{:},iref);
-  rhs_nmnn = op_f_v_mp (space.boundary, msh.boundary, gref, iref_patch_list);
-  rhs(space.boundary.dofs) = rhs(space.boundary.dofs) + rhs_nmnn;
+% boundary conditions
+Nbnd = cumsum([0, boundaries_mag.nsides]);
+for iref=nmnn_sides_mag
+   iref_patch_list = Nbnd(iref)+1:Nbnd(iref+1);
+   gref = @(varargin) g_mag(varargin{:},iref);
+   rhs_mag_nmnn = op_f_v_mp (space_mag.boundary, msh_mag.boundary, gref, iref_patch_list);
+   rhs_mag(space_mag.boundary.dofs) = rhs_mag(space_mag.boundary.dofs) + rhs_mag_nmnn;
 end
+A = zeros(space_mag.ndof,1);
+[A_drchlt, drchlt_dofs_mag] = sp_drchlt_l2_proj (space_mag, msh_mag, h_mag, drchlt_sides_mag);
+A(drchlt_dofs_mag) = A_drchlt;
+int_dofs_mag = setdiff(1:space_mag.ndof, drchlt_dofs_mag);
+rhs_mag(int_dofs_mag) = rhs_mag(int_dofs_mag) - B_mat(int_dofs_mag,drchlt_dofs_mag) * A_drchlt;
 
-% Apply Dirichlet boundary conditions
-u = zeros (space.ndof, 1);
-[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h_mech, drchlt_sides_mech);
-u(drchlt_dofs) = u_drchlt;
+% solve magnetostatics
+% A(int_dofs_mag) = B_mat(int_dofs_mag,int_dofs_mag) \ rhs_mag(int_dofs_mag);
 
-int_dofs = setdiff (1:space.ndof, drchlt_dofs);
-rhs(int_dofs) = rhs(int_dofs) - mat(int_dofs, drchlt_dofs) * u_drchlt;
+% mechanic problem
+A_mat = op_le2d_mp (space_mec, space_mec, msh_mec, E, nu ,G);
+rhs_mec = op_f_v_mp (space_mec, msh_mec, f_mec);
 
-% Solve the linear system
-u(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
+% boundary conditions
+Nbnd = cumsum([0, boundaries_mec.nsides]);
+for iref=nmnn_sides_mec
+   iref_patch_list = Nbnd(iref)+1:Nbnd(iref+1);
+   gref = @(varargin) g_mec(varargin{:},iref);
+   rhs_mec_nmnn = op_f_v_mp (space_mec.boundary, msh_mec.boundary, gref, iref_patch_list);
+   rhs_mec(space_mec.boundary.dofs) = rhs_mec(space_mec.boundary.dofs) + rhs_mec_nmnn;
+end
+u = zeros(space_mec.ndof,1);
+[u_drchlt, drchlt_dofs_mec] = sp_drchlt_l2_proj (space_mec, msh_mec, h_mec, drchlt_sides_mec);
+u(drchlt_dofs_mec) = u_drchlt;
+int_dofs_mec = setdiff(1:space_mec.ndof, drchlt_dofs_mec);
+rhs_mec(int_dofs_mec) = rhs_mec(int_dofs_mec) - A_mat(int_dofs_mec,drchlt_dofs_mec) * u_drchlt;
 
+% solve linear elasticity
+% u(int_dofs_mec) = A_mat(int_dofs_mec,int_dofs_mec) \ rhs_mec(int_dofs_mec);
+
+% coupling
+C_mat = op_mec2d_mp (space_mec, space_mag, msh_mag, f);
+
+A_mat = A_mat(int_dofs_mec,int_dofs_mec);
+B_mat = B_mat(int_dofs_mag,int_dofs_mag);
+% reverse in construction c(v,A) should be of size dim(v) x dim(A), geopdes builds inverted
+C_mat = C_mat(int_dofs_mag,int_dofs_mec);
+
+rhs_mag = rhs_mag(int_dofs_mag);
+rhs_mec = rhs_mec(int_dofs_mec);
+
+mat = [A_mat -C_mat.'; -C_mat B_mat];
+rhs = [rhs_mec; rhs_mag];
+
+DoFs = mat \ rhs;
+u(int_dofs_mec) = DoFs(1:length(int_dofs_mec));
+A(int_dofs_mag) = DoFs(length(int_dofs_mec)+1:length(int_dofs_mec)+length(int_dofs_mag));
 end

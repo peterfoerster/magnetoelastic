@@ -17,7 +17,7 @@ function mat = op_le2d_mp (spu, spv, msh, E, nu, G, patch_list)
   end
 
   if ((spu.npatch ~= spv.npatch) || (spu.npatch ~= msh.npatch))
-    error ('op_su_ev_mp: the number of patches does not coincide')
+    error ('op_le2d_mp: the number of patches does not coincide')
   end
 
   ncounter = 0;

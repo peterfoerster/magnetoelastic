@@ -1,20 +1,19 @@
 % INPUT:
 %
-%   spacev:   object representing the space of mechanical test functions (see sp_vector)
-%   spaceA:   object representing the space of magnetic trial functions (see sp_vector)
-%   msh:      object that defines the domain partition and the quadrature rule (see msh_cartesian)
-%   fc: function handles to compute the coefficients
+%   spacev: object representing the space of mechanical test functions (see sp_vector)
+%   spaceA: object representing the space of magnetic trial functions (see sp_scalar)
+%   msh:    object that defines the domain partition and the quadrature rule (see msh_cartesian)
+%   f:      function handles to compute the coefficients
 %
 % OUTPUT:
 %
-%   Ct:     assembled matrix
+%   mat:    assembled matrix
 %   rows:   row indices of the nonzero entries
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
 
-function varargout = op_linear_elasticity2d_tp (spacev, spaceA, msh, fc, iptc)
-  % (1,u)->v, (2,v)->A
-  Ct = spalloc (spaceA.ndof, spacev.ndof, 5*spacev.ndof);
+function varargout = op_mec2d_tp (spacev, spaceA, msh, f, iptc)
+  mat = spalloc (spaceA.ndof, spacev.ndof, 5*spacev.ndof);
 
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);
@@ -25,17 +24,17 @@ function varargout = op_linear_elasticity2d_tp (spacev, spaceA, msh, fc, iptc)
     for idim = 1:msh.rdim
       x{idim} = reshape (msh_col.geo_map(idim,:,:), msh_col.nqn, msh_col.nel);
     end
-    for ifc=1:numel(fc)
-      fc_iel{ifc} = fc{ifc} (x{:}, iptc);
+    for idf=1:numel(f)
+      f_iel{idf} = f{idf} (x{:}, iptc);
     end
 
-    Ct = Ct + op_linear_elasticity2d (spv_col, spA_col, msh_col, fc_iel);
+    mat = mat + op_mec2d (spv_col, spA_col, msh_col, f_iel);
   end
 
   if (nargout == 1)
-    varargout{1} = Ct;
+    varargout{1} = mat;
   elseif (nargout == 3)
-    [rows, cols, vals] = find (Ct);
+    [rows, cols, vals] = find (mat);
     varargout{1} = rows;
     varargout{2} = cols;
     varargout{3} = vals;
