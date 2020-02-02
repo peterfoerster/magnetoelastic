@@ -10,7 +10,9 @@ geometry_file = 'magnetoelastic';
 [problem_data, method_data] = setup_problem (geometry_file);
 
 tic;
-[geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_coupling2d (problem_data, method_data);
+% [geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_coupling2d (problem_data, method_data);
+% [geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_weak_coupling2d (problem_data, method_data);
+[geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_weak_coupling2d_mag (problem_data, method_data);
 % [geometry_ms, msh_ms, space_ms, A] = mp_solve_magnetostatics2d (problem_data, method_data);
 % [geometry, msh, space, u] = mp_solve_linear_elasticity2d (problem_data, method_data);
 fprintf('\ntime elapsed for solution: %d min\n', toc/60);

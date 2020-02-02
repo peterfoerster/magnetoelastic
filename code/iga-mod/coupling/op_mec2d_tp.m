@@ -4,6 +4,7 @@
 %   spaceA: object representing the space of magnetic trial functions (see sp_scalar)
 %   msh:    object that defines the domain partition and the quadrature rule (see msh_cartesian)
 %   f:      function handles to compute the coefficients
+%   iptc:   patch index
 %
 % OUTPUT:
 %
@@ -13,7 +14,7 @@
 %   values: values of the nonzero entries
 
 function varargout = op_mec2d_tp (spacev, spaceA, msh, f, iptc)
-  mat = spalloc (spaceA.ndof, spacev.ndof, 5*spacev.ndof);
+  mat = spalloc (spacev.ndof, spaceA.ndof, 5*spacev.ndof);
 
   for iel = 1:msh.nel_dir(1)
     msh_col = msh_evaluate_col (msh, iel);

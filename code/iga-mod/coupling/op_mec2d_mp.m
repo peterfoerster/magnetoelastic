@@ -23,13 +23,13 @@ function mat = op_mec2d_mp (spv, spA, msh, f, patch_list)
   ncounter = 0;
   for iptc = patch_list
     [rs, cs, vs] = op_mec2d_tp (spv.sp_patch{iptc}, spA.sp_patch{iptc}, msh.msh_patch{iptc}, f, iptc);
-    rows(ncounter+(1:numel (rs))) = spA.gnum{iptc}(rs);
-    cols(ncounter+(1:numel (rs))) = spv.gnum{iptc}(cs);
+    rows(ncounter+(1:numel (rs))) = spv.gnum{iptc}(rs);
+    cols(ncounter+(1:numel (rs))) = spA.gnum{iptc}(cs);
     vals(ncounter+(1:numel (rs))) = vs;
     ncounter = ncounter + numel (rs);
   end
 
-  mat = sparse (rows, cols, vals, spA.ndof, spv.ndof);
+  mat = sparse (rows, cols, vals, spv.ndof, spA.ndof);
   clear rows cols vals rs cs vs
 
 end

@@ -1,4 +1,4 @@
-% MP_SOLVE_COUPLING2D: Solve the 2d coupled magnetoelastic (static) problem in a multipatch domain.
+% MP_SOLVE_WEAK_COUPLING2D_MAG: Solve the 2d weakly coupled magnetoelastic (static) problem in a multipatch domain.
 %
 % Function to solve the problem (check matrix formulation)
 %
@@ -41,7 +41,7 @@
 %  space_mec/mag: multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch)
 %  u/A:           the computed degrees of freedom
 
-function [geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_coupling2d (problem_data, method_data)
+function [geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_weak_coupling2d_mag (problem_data, method_data)
 data_names=fieldnames(problem_data);
 for iopt=1:numel(data_names)
    eval ([data_names{iopt} '= problem_data.(data_names{iopt});']);
@@ -127,20 +127,18 @@ u(drchlt_dofs_mec) = u_drchlt;
 int_dofs_mec = setdiff(1:space_mec.ndof, drchlt_dofs_mec);
 rhs_mec(int_dofs_mec) = rhs_mec(int_dofs_mec) - A_mat(int_dofs_mec,drchlt_dofs_mec) * u_drchlt;
 
+% solve linear elasticity
+u(int_dofs_mec) = A_mat(int_dofs_mec,int_dofs_mec) \ rhs_mec(int_dofs_mec);
+
 % coupling
 C_mat = op_mec2d_mp (space_mec, space_mag, msh_mag, f);
 
-A_mat = A_mat(int_dofs_mec,int_dofs_mec);
 B_mat = B_mat(int_dofs_mag,int_dofs_mag);
 C_mat = C_mat(int_dofs_mec,int_dofs_mag);
 
 rhs_mag = rhs_mag(int_dofs_mag);
-rhs_mec = rhs_mec(int_dofs_mec);
+rhs = rhs_mag + C_mat.' * u(int_dofs_mec);
 
-mat = [A_mat -C_mat; -C_mat.' B_mat];
-rhs = [rhs_mec; rhs_mag];
-
-DoFs = mat \ rhs;
-u(int_dofs_mec) = DoFs(1:length(int_dofs_mec));
-A(int_dofs_mag) = DoFs(length(int_dofs_mec)+1:length(int_dofs_mec)+length(int_dofs_mag));
+DoFs = B_mat \ rhs;
+A(int_dofs_mag) = DoFs(1:length(int_dofs_mag));
 end

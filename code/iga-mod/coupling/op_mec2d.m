@@ -50,14 +50,14 @@ function varargout = op_mec2d (spv, spA, msh, f)
 
       tmp = 1/2 * bsxfun(@times, jacdet_iel, tmp1 - tmp2);
 
-      values(ncounter+(1:spv.nsh(iel)*spA.nsh(iel))) = reshape (sum (tmp, 3), spA.nsh(iel), spv.nsh(iel));
+      values(ncounter+(1:spv.nsh(iel)*spA.nsh(iel))) = reshape (sum (tmp, 3), spv.nsh(iel), spA.nsh(iel));
 
-      [rows_loc, cols_loc] = ndgrid (spA.connectivity(:,iel), spv.connectivity(:,iel));
+      [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spA.connectivity(:,iel));
       rows(ncounter+(1:spv.nsh(iel)*spA.nsh(iel))) = rows_loc;
       cols(ncounter+(1:spv.nsh(iel)*spA.nsh(iel))) = cols_loc;
       ncounter = ncounter + spv.nsh(iel)*spA.nsh(iel);
 
-      % catch NaN values originating from noninvolved patches
+      % catch NaN values originating from non-involved patches
       idx = isnan(values);
       values(idx) = 0;
     else
@@ -67,7 +67,7 @@ function varargout = op_mec2d (spv, spA, msh, f)
 
   if (nargout == 1 || nargout == 0)
     varargout{1} = sparse (rows(1:ncounter), cols(1:ncounter), ...
-                           values(1:ncounter), spA.ndof, spv.ndof);
+                           values(1:ncounter), spv.ndof, spA.ndof);
   elseif (nargout == 3)
     varargout{1} = rows(1:ncounter);
     varargout{2} = cols(1:ncounter);
