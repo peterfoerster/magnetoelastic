@@ -6,24 +6,23 @@ function [f] = compute_f_mag (x, y, iptc, coils)
    jt = coils.current/At_coil;
 
    % evaluate current densities depending on the patch
-   switch (iptc)
-      case {4}
-         % upper coil
-         xl = x > coils.tll(1);
-         xr = x < coils.tur(1);
-         yb = y > coils.tll(2);
-         yt = y < coils.tur(2);
-         idx_coil = (xl & xr & yb & yt);
-         ft = zeros(size(x)) + jt*idx_coil;
-         % lower coil
-         xl = x > coils.bll(1);
-         xr = x < coils.bur(1);
-         yb = y > coils.bll(2);
-         yt = y < coils.bur(2);
-         idx_coil = (xl & xr & yb & yt);
-         fb = zeros(size(x)) + jb*idx_coil;
-         f = fb + ft;
-      otherwise
-         f = zeros(size(x));
-   end%switch
+   if (iptc==4 || iptc ==6)
+      % upper coil
+      xl = x > coils.tll(1);
+      xr = x < coils.tur(1);
+      yb = y > coils.tll(2);
+      yt = y < coils.tur(2);
+      idx_coil = (xl & xr & yb & yt);
+      ft = zeros(size(x)) + jt*idx_coil;
+      % lower coil
+      xl = x > coils.bll(1);
+      xr = x < coils.bur(1);
+      yb = y > coils.bll(2);
+      yt = y < coils.bur(2);
+      idx_coil = (xl & xr & yb & yt);
+      fb = zeros(size(x)) + jb*idx_coil;
+      f = fb + ft;
+   else
+      f = zeros(size(x));
+   end
 end
