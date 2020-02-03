@@ -51,6 +51,7 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    e11 = 213.3;
    e21 = -17.66;
    e62 = 150;
+
    problem_data.f = {@(x,y,iptc) compute_f(x, y, iptc, e11/mu11), @(x,y,iptc) compute_f(x, y, iptc, e21/mu11), ...
                      @(x,y,iptc) compute_f(x, y, iptc, e62/mu22)};
 
@@ -58,7 +59,7 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    % degree-1
    method_data.regularity = method_data.degree - 1;
    % to be determined by convergence study
-   method_data.nsub       = [16 16];
+   method_data.nsub       = [8 8];
    % degree+1
    method_data.nquad      = method_data.degree + 1;
 end
