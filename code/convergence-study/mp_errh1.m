@@ -1,3 +1,4 @@
+% ||u-u_ref||_H^1 = (S |u-u_ref|^2 + |grad(u)-grad(u_ref)|^2 dx)^1/2 
 function [errh1 errl2] = mp_errh1 (msh_ref, space_ref, u_ref, u, space, geometry)
    if (space_ref.npatch ~= msh_ref.npatch || space.npatch ~= msh_ref.npatch)
       error('The number of patches does not coincide');
