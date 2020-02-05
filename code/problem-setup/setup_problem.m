@@ -10,16 +10,11 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    problem_data.mu = {@(x,y,iptc) compute_mu(x, y, iptc, mu11), @(x,y,iptc) compute_mu(x, y, iptc, mu22)};
 
    % coils defined via rectangles with homogeneous current density
-   % only patch 4
-   % coils.bll = [0.5 3.5];
-   % coils.bur = [2.5 4];
-   % coils.tll = [0.5 4.5];
-   % coils.tur = [2.5 5];
-   % symmetric case
-   coils.bll = [0.5 1];
-   coils.bur = [2.5 1.5];
-   coils.tll = [0.5 3.5];
-   coils.tur = [2.5 4];
+   % v1
+   coils.bll = [1 1];
+   coils.bur = [3 1.5];
+   coils.tll = [1 3.5];
+   coils.tur = [3 4];
 
    % 100 windings with 5 Ampere each
    coils.current = 100*5;
@@ -55,11 +50,11 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    problem_data.f = {@(x,y,iptc) compute_f(x, y, iptc, e11/mu11), @(x,y,iptc) compute_f(x, y, iptc, e21/mu11), ...
                      @(x,y,iptc) compute_f(x, y, iptc, e62/mu22)};
 
-   method_data.degree     = [2 2];
+   method_data.degree     = [3 3];
    % degree-1
    method_data.regularity = method_data.degree - 1;
    % to be determined by convergence study
-   method_data.nsub       = [8 8];
+   method_data.nsub       = [32 32];
    % degree+1
    method_data.nquad      = method_data.degree + 1;
 end
