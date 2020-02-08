@@ -1,7 +1,7 @@
 function [mu_ptc] = compute_mu (x, y, iptc, mu)
    switch (iptc)
       case {5}
-         % anisotropic
+         % plate
          mu_ptc = mu * ones(size(x));
       otherwise
          % vacuum

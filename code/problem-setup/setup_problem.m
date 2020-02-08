@@ -11,10 +11,10 @@ function [problem_data, method_data] = setup_problem (geometry_file)
 
    % coils defined via rectangles with homogeneous current density
    % v1
-   coils.bll = [1 1];
-   coils.bur = [3 1.5];
-   coils.tll = [1 3.5];
-   coils.tur = [3 4];
+   coils.bll = [0.5 2];
+   coils.bur = [2.5 2.5];
+   coils.tll = [0.5 4.5];
+   coils.tur = [2.5 5];
 
    % 100 windings with 5 Ampere each
    coils.current = 100*5;
@@ -52,9 +52,9 @@ function [problem_data, method_data] = setup_problem (geometry_file)
 
    method_data.degree     = [3 3];
    % degree-1
-   method_data.regularity = method_data.degree - 1;
+   method_data.regularity = method_data.degree-1;
    % to be determined by convergence study
    method_data.nsub       = [32 32];
    % degree+1
-   method_data.nquad      = method_data.degree + 1;
+   method_data.nquad      = method_data.degree+1;
 end
