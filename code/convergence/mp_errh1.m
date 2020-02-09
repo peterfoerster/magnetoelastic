@@ -1,4 +1,4 @@
-% ||(u-u_ref)/u_ref||_H^1 = (S |(u-u_ref)/u_ref|^2 + |(grad(u)-grad(u_ref))/grad(u_ref)|^2 dx)^1/2
+% ||u-u_ref||_H^1 = (S |u-u_ref|^2 + |grad(u)-grad(u_ref)|^2 dx)^1/2
 
 function [errh1, errl2] = mp_errh1 (geometry, msh_ref, space_ref, u_ref, space, u)
    if (space_ref.npatch ~= msh_ref.npatch || space.npatch ~= msh_ref.npatch)
@@ -17,7 +17,7 @@ function [errh1, errl2] = mp_errh1 (geometry, msh_ref, space_ref, u_ref, space, 
       else
          u_ptc = u(space.gnum{iptc}) .* space.dofs_ornt{iptc}.';
       end
-% keyboard
+      
       [errh1_ptc, errl2_ptc] = sp_errh1 (geometry(iptc), msh_ref.msh_patch{iptc}, ...
                                          space_ref.sp_patch{iptc}, u_ref_ptc, space.sp_patch{iptc}, u_ptc);
       errh1 = errh1 + errh1_ptc;

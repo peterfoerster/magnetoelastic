@@ -1,7 +1,5 @@
-function [] = compute_errh1 (problem_data, method_data, degree_ref, nsub_ref, degree, N_it)
-   % change filename and solver calls for other studies
-   filename = 'magnetostatics2d';
-
+function [] = compute_errh1 (problem_data, method_data, degree_ref, nsub_ref, degree, N_it, filename)
+   % change solver calls for other studies
    errh1 = errl2 = NaN(N_it+1,1);
    % reference solution
    method_data.degree     = degree_ref;
