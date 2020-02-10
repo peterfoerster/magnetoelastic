@@ -1,8 +1,8 @@
 % INPUT:
 %
-%   spw:   structure representing the space of trial functions (see sp_scalar/sp_evaluate_col)
-%   spv:   structure representing the space of test functions (see sp_scalar/sp_evaluate_col)
-%   msh:   structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)
+%   spw: structure representing the space of trial functions (see sp_scalar/sp_evaluate_col)
+%   spv: structure representing the space of test functions (see sp_scalar/sp_evaluate_col)
+%   msh: structure containing the domain partition and the quadrature rule (see msh_cartesian/msh_evaluate_col)
 %   b:   width
 %   rho: density
 %   E:   Young's modulus
@@ -16,37 +16,43 @@
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
 
-function varargout = op_gradgradu_gradgradv (spw, spv, msh, b, rho, E, A, I)
+function varargout = op_wmec1d (spw, spv, msh, b, rho, E, A, I)
+   % (ncomp x rdim x msh_col.nqn x nsh_max x msh_col.nel)
+   derw = reshape(spw.shape_function_gradients(1,:,:), 1, msh.nqn, spw.nsh_max, msh.nel);
+   derv = reshape(spv.shape_function_gradients(1,:,:), 1, msh.nqn, spv.nsh_max, msh.nel);
+   % (rdim x rdim x msh_col.nqn x nsh_max x msh_col.nel)
+   der2w = reshape(spw.shape_function_hessians(2,2,:,:), 1, msh.nqn, spw.nsh_max, msh.nel);
+   der2v = reshape(spv.shape_function_hessians(2,2,:,:), 1, msh.nqn, spv.nsh_max, msh.nel);
 
-   derw = reshape (spw.shape_function_gradients, spw.ncomp, [], msh.nqn, spw.nsh_max, msh.nel);
-   derv = reshape (spv.shape_function_gradients, spv.ncomp, [], msh.nqn, spv.nsh_max, msh.nel);
-
-   der2w = reshape (spw.shape_function_hessians, spw.ncomp, [], msh.nqn, spw.nsh_max, msh.nel);
-   der2v = reshape (spv.shape_function_hessians, spv.ncomp, [], msh.nqn, spv.nsh_max, msh.nel);
-
-   ndir   = size(der2w,2);
    rows   = zeros(msh.nel*spw.nsh_max*spv.nsh_max,1);
    cols   = zeros(msh.nel*spw.nsh_max*spv.nsh_max,1);
    values = zeros(msh.nel*spw.nsh_max*spv.nsh_max,1);
 
    jacdet_weights = msh.jacdet .* msh.quad_weights;
-keyboard
+
    ncounter = 0;
    for iel=1:msh.nel
       if (all(msh.jacdet(:,iel)))
-         der2u_iel = reshape (der2u(:,:,:,1:spu.nsh(iel),iel), spu.ncomp*ndir, msh.nqn, 1, spu.nsh(iel));
-         der2v_iel = reshape (der2v(:,:,:,1:spv.nsh(iel),iel), spv.ncomp*ndir, msh.nqn, spv.nsh(iel), 1);
+         derw_iel = reshape(derw(:,:,1:spw.nsh(iel),iel), 1, msh.nqn, 1, spw.nsh(iel));
+         derv_iel = reshape(derv(:,:,1:spv.nsh(iel),iel), 1, msh.nqn, spv.nsh(iel), 1);
 
-         jacdet_iel = reshape (jacdet_weights(:,iel), [1,msh.nqn,1,1]);
+         der2w_iel = reshape(der2w(:,:,1:spw.nsh(iel),iel), 1, msh.nqn, 1, spw.nsh(iel));
+         der2v_iel = reshape(der2v(:,:,1:spv.nsh(iel),iel), 1, msh.nqn, spv.nsh(iel), 1);
 
-         jacdet_der2u = bsxfun (@times, jacdet_iel, der2u_iel);
-         tmp1 = sum (bsxfun (@times, jacdet_der2u, der2v_iel), 1);
-         values(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = reshape (sum (tmp1, 2), spv.nsh(iel), spu.nsh(iel));
+         jacdet_iel = reshape(jacdet_weights(:,iel), [1,msh.nqn,1,1]);
 
-         [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spu.connectivity(:,iel));
-         rows(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = rows_loc;
-         cols(ncounter+(1:spu.nsh(iel)*spv.nsh(iel))) = cols_loc;
-         ncounter = ncounter + spu.nsh(iel)*spv.nsh(iel);
+         tmp1 = bsxfun (@times, derw_iel, derv_iel);
+         tmp1 = bsxfun (@times, 1/2*E*A*jacdet_iel, tmp1);
+
+         tmp2 = bsxfun (@times, der2w_iel, der2v_iel);
+         tmp2 = bsxfun (@times, 1/2*E*I*jacdet_iel, tmp2);
+
+         values(ncounter+(1:spw.nsh(iel)*spv.nsh(iel))) = reshape(sum(tmp1 + tmp2, 2), spv.nsh(iel), spw.nsh(iel));
+
+         [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spw.connectivity(:,iel));
+         rows(ncounter+(1:spw.nsh(iel)*spv.nsh(iel))) = rows_loc;
+         cols(ncounter+(1:spw.nsh(iel)*spv.nsh(iel))) = cols_loc;
+         ncounter = ncounter + spw.nsh(iel)*spv.nsh(iel);
 
       else
          warning ('geopdes:jacdet_zero_at_quad_node', 'op_wmec1d: singular map in element number %d', iel)

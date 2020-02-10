@@ -4,27 +4,26 @@
 %
 %     <rho * w'',v> + a(w,v) = l(v)     in Omega = F(0,1)
 %
-%     with w1(0,t) = w2(0,t) = 0  and   w2'(0,t) = 0,
+%     with w1(0,t) = w2(0,t) = 0   and   w2'(0,t) = 0,
 %
-%  where <rho * w'', v> = b^2 S (rho v * w'') dx1,
+%  where <rho * w'',v> = b^2 S (rho v * w'') dx1,
 %                a(w,v) = 1/2*E*A * S (w1' * v1') dx1 + 1/2*E*I * S (w2'' * v2'') dx1,
 %                <l,v>  = sum(D1k * Bk) * (A * S (v1') dx1 - b^3/2 * S (v2'') dx1).
 %
 % INPUT:
 %
 %  problem_data: a structure with data of the problem. It contains the fields:
-%    - geo_name:      name of the file containing the geometry
-%    - b:             width
-%    - rho:           material density
-%    - E:             Young's modulus
-%    - I:             axial moment of inertia
-%    - A:             cross-sectional area
-%    - B:             magnetic flux density
-%    - drchlt1_sides: [boolean boolean] ends with 1st type Dirichlet boundary condition (Homogeneous)
-%    - drchlt2_sides: ends with 2nd type Dirichlet boundary condition (Homogeneous)
-%    - nmnn1_sides:   ends with 1st type Neumann boundary condition
-%    - nmnn2_sides:   ends with 2nd type Neumann boundary condition
-%    - g:             function for 2nd type Neumann boundary condition
+%    - geo_name:     name of the file containing the geometry
+%    - drchlt_sides: sides with Dirichlet boundary conditions
+%    - nmmn_sides:   sides with Neumann boundary conditions
+%    - b:            width
+%    - rho:          material density
+%    - E:            Young's modulus
+%    - I:            axial moment of inertia
+%    - A:            cross-sectional area
+%    - B:            magnetic flux density
+%    - g:            function for Neumann boundary conditions
+%    - h:            function for Dirichlet boundary conditions
 %
 %  method_data: a structure with discretization data. Its fields are:
 %    - degree:     degree of the spline functions.
@@ -40,36 +39,31 @@
 %  space:    space object that defines the discrete basis functions (see sp_vector_2d)
 %  w:        the computed degrees of freedom
 
-function [geometry, msh, sp, u] = solve_weak_coupling1d (problem_data, method_data)
+function [geometry, msh, sp, w] = solve_weak_coupling1d (problem_data, method_data)
 
-data_names = fieldnames (problem_data);
-for iopt  = 1:numel (data_names)
-  eval ([data_names{iopt} '= problem_data.(data_names{iopt});']);
-end
-data_names = fieldnames (method_data);
-for iopt  = 1:numel (data_names)
-  eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
-end
+   data_names = fieldnames (problem_data);
+   for iopt=1:numel(data_names)
+      eval ([data_names{iopt} '= problem_data.(data_names{iopt});']);
+   end
+   data_names = fieldnames (method_data);
+   for iopt=1:numel(data_names)
+      eval ([data_names{iopt} '= method_data.(data_names{iopt});']);
+   end
 
-% Construct geometry structure
-geometry = geo_load (geo_name);
-[knots, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
+   geometry = geo_load (geo_name);
+   [knots, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
+   rule     = msh_gauss_nodes (nquad);
+   [qn, qw] = msh_set_quad_nodes (zeta, rule);
+   msh      = msh_cartesian (zeta, qn, qw, geometry);
+   % one two-dimensional scalar space
+   sp = sp_bspline (knots, degree, msh);
 
-% Construct msh structure
-rule     = msh_gauss_nodes (nquad);
-[qn, qw] = msh_set_quad_nodes (zeta, rule);
-msh      = msh_cartesian (zeta, qn, qw, geometry, 'boundary', true, 'der2', true);
-
-% Construct space structure
-sp = sp_bspline (knots, degree, msh);
-
-% continue here!
-% Assemble the stiffness matrix
+   % assemble matrix
+   mat = op_wmec1d_tp (sp, sp, msh, b, rho, E, A, I);
 keyboard
-mat = op_wmec1d_tp (sp, sp, msh, b, rho, E, A, I);
-
-%Assemble the force vector
-rhs = op_f_v_tp (sp, msh, f);
+return
+   % assemble rhs
+   rhs = op_f_v_tp (sp, msh, f);
 
 % Apply homogeneous 1st Dirichlet boundary conditions
 %  and 1st Neumann boundary conditions
