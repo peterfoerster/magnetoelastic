@@ -8,14 +8,14 @@ omega = 2*pi*50;
 [problem_data, method_data] = setup_problem_fd (geometry_file, omega);
 
 tic;
-[geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_coupling2d_fd (problem_data, method_data);
-% [geometry_mec, msh_mag, space_mag, A] = mp_solve_magnetoquasistatics2d (problem_data, method_data);
+% [geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_coupling2d_fd (problem_data, method_data);
+[geometry_mec, msh_mag, space_mag, A] = mp_solve_magnetoquasistatics2d (problem_data, method_data);
 fprintf('\ntime elapsed for solution: %d min\n', toc/60);
 
 % write .vtk files
-T = linspace(0, 1/50, 10);
+T = linspace(0, 1/50, 31);
 sp_to_vtk_mp_curl2d_fd (A, space_mag, geometry_mec, method_data.nsub, ['B_degree=' num2str(method_data.degree(1)) '_nsub=' num2str(method_data.nsub(1))], 'B', omega, T);
-
+return
 % plot deformed geometry
 i_cmp = complex(0, 1);
 for it=1:length(T)
@@ -26,6 +26,8 @@ for it=1:length(T)
    axis([0 4 2.5 4.5]);
    shading faceted; view(2);
    drawnow;
+   % gimp: pos(210,180), size(1550,800)
+   % print(gcf, ['mec_fd_le_scale=1e3_it=' num2str(it) '.png'], '-dpng', '-S2800,2100');
 end
 
 % signal that the program is finished
