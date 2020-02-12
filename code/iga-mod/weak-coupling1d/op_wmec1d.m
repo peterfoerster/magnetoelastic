@@ -18,11 +18,11 @@
 
 function varargout = op_wmec1d (spw, spv, msh, b, rho, E, A, I)
    % (ncomp x rdim x msh_col.nqn x nsh_max x msh_col.nel)
-   derw = reshape(spw.shape_function_gradients(1,:,:), 1, msh.nqn, spw.nsh_max, msh.nel);
-   derv = reshape(spv.shape_function_gradients(1,:,:), 1, msh.nqn, spv.nsh_max, msh.nel);
-   % (rdim x rdim x msh_col.nqn x nsh_max x msh_col.nel)
-   der2w = reshape(spw.shape_function_hessians(2,2,:,:), 1, msh.nqn, spw.nsh_max, msh.nel);
-   der2v = reshape(spv.shape_function_hessians(2,2,:,:), 1, msh.nqn, spv.nsh_max, msh.nel);
+   derw = reshape(spw.shape_function_gradients(1,1,:,:), 1, msh.nqn, spw.nsh_max, msh.nel);
+   derv = reshape(spv.shape_function_gradients(1,1,:,:), 1, msh.nqn, spv.nsh_max, msh.nel);
+   % (ncomp x)? (rdim x rdim x msh_col.nqn x nsh_max x msh_col.nel)
+   der2w = reshape(spw.shape_function_hessians(2,1,1,:,:), 1, msh.nqn, spw.nsh_max, msh.nel);
+   der2v = reshape(spv.shape_function_hessians(2,1,1,:,:), 1, msh.nqn, spv.nsh_max, msh.nel);
 
    rows   = zeros(msh.nel*spw.nsh_max*spv.nsh_max,1);
    cols   = zeros(msh.nel*spw.nsh_max*spv.nsh_max,1);
