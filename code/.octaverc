@@ -1,6 +1,6 @@
 addpath('/home/peter/magnetoelastic/code/convergence', '-begin');
 
-addpath('/home/peter/magnetoelastic/code/geometry/v0:/home/peter/magnetoelastic/code/geometry/v1:/home/peter/magnetoelastic/code/geometry/v2', '-begin');
+addpath('/home/peter/magnetoelastic/code/geometry/v0:/home/peter/magnetoelastic/code/geometry/v1:/home/peter/magnetoelastic/code/geometry/v2:/home/peter/magnetoelastic/code/geometry/v3', '-begin');
 
 addpath('/home/peter/magnetoelastic/code/iga-mod:/home/peter/magnetoelastic/code/iga-mod/coupling:/home/peter/magnetoelastic/code/iga-mod/linear-elasticity:/home/peter/magnetoelastic/code/iga-mod/magnetoquasistatics:/home/peter/magnetoelastic/code/iga-mod/magnetostatics:/home/peter/magnetoelastic/code/iga-mod/weak-coupling1d', '-begin');
 
