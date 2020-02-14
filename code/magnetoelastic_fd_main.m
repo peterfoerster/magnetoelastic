@@ -1,7 +1,7 @@
 % frequency domain
 pkg load geopdes;
 
-geometry_file = 'magnetoelastic_v2';
+geometry_file = 'magnetoelastic_v3';
 
 % specify problem and material data
 omega = 2*pi*50;
@@ -9,24 +9,19 @@ omega = 2*pi*50;
 
 tic;
 % [geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_coupling2d_fd (problem_data, method_data);
-% [geometry_mec, msh_mag, space_mag, A] = mp_solve_magnetoquasistatics2d (problem_data, method_data);
-[geometry_mec, msh_mag, space_mag] = mp_rebuild_magnetoquasistatics2d (problem_data, method_data);
+[geometry_mec, msh_mag, space_mag, A] = mp_solve_magnetoquasistatics2d (problem_data, method_data);
+% [geometry_mec, msh_mag, space_mag] = mp_rebuild_magnetoquasistatics2d (problem_data, method_data);
 fprintf('\ntime elapsed for solution: %d min\n', toc/60);
-return
+
 % save solution
 save(['A_degree=' num2str(method_data.degree(1)) '_nsub=' num2str(method_data.nsub(1)) '.mat'], 'A');
 
 % write .vtk files
 T = 0;
 sp_to_vtk_mp_curl2d_fd (A, space_mag, geometry_mec, method_data.nsub, ['B_degree=' num2str(method_data.degree(1)) '_nsub=' num2str(method_data.nsub(1))], 'B', omega, T);
-
+return
 % % plot deformed geometry
 % T = linspace(0, 1/50, 2);
-% if (method_data.nsub(1) > 32)
-%    nsub = [32 32];
-% else
-%    nsub = method_data.nsub;
-% end
 % i_cmp = complex(0, 1);
 % for it=1:length(T)
 %    u_plot = real(u * exp(i_cmp*omega*T(it))) * 1e3;

@@ -2,7 +2,7 @@
 %
 % Function to solve the weak problem
 %
-%     S (1/mu22 * A_x1 * At_x1 + 1/mu11 * A_x2 * At_x2 + j*omega*sigma * A * At) dx = S (f) dx    in Omega
+%     S (1/mu22 * A_x1 * At_x1 + 1/mu11 * A_x2 * At_x2 + i*omega*sigma * A * At) dx = S (f) dx    in Omega
 %                                                                             A x n = g           on Gamma_N
 %                                                                                 u = h           on Gamma_D
 %
@@ -77,7 +77,7 @@ function [geometry, msh, space, A] = mp_solve_magnetoquasistatics2d (problem_dat
    end
 
    A = zeros(space.ndof,1);
-   [A_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h_mag, drchlt_sides_mag);
+   [A_drchlt, drchlt_dofs] = sp_drchlt_l2_proj_mod (space, msh, h_mag, drchlt_sides_mag);
    A(drchlt_dofs) = A_drchlt;
 
    int_dofs = setdiff(1:space.ndof, drchlt_dofs);
