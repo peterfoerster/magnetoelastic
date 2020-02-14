@@ -11,12 +11,32 @@ geometry_file = 'magnetoelastic_v2';
 [problem_data, method_data] = setup_problem (geometry_file);
 
 tic;
-[geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_coupling2d (problem_data, method_data);
+% [geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_coupling2d (problem_data, method_data);
 % [geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_weak_coupling2d (problem_data, method_data);
 % [geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_weak_coupling2d_mag (problem_data, method_data);
-% [geometry_mec, msh_mag, space_mag, A] = mp_solve_magnetostatics2d (problem_data, method_data);
+[geometry_mec, msh_mag, space_mag, A] = mp_solve_magnetostatics2d (problem_data, method_data);
 % [geometry_mec, msh_mec, space_mec, u] = mp_solve_linear_elasticity2d (problem_data, method_data);
 fprintf('\ntime elapsed for solution: %d min\n', toc/60);
+
+% save solution
+save(['A_degree=' num2str(method_data.degree(1)) '_nsub=' num2str(method_data.nsub(1)) '.mat'], 'A');
+
+% plot mesh
+% for iptc = 1:length(geometry)
+%    nurbs = geometry(iptc).nurbs;
+%   [rknots, zeta, nknots] = kntrefine (nurbs.knots, [31 31], nurbs.order-1, nurbs.order-2);
+%   nurbs    = geo_load (nrbkntins (nurbs, nknots));
+%   fields   = fieldnames (nurbs);
+%   for ifld = 1:numel (fields)
+%       geometry(iptc).(fields{ifld}) = nurbs.(fields{ifld});
+%   end
+% end
+%
+% for iptc=1:length(geometry)
+%    hold on;
+%    nrbkntplot(geometry(iptc).nurbs);
+%    hold off;
+% end
 
 % plot absolute value of magnetic flux density (and write .dat files optionally)
 % figure(1);
@@ -24,6 +44,7 @@ fprintf('\ntime elapsed for solution: %d min\n', toc/60);
 % shading interp; view(2);
 % write .vtk files
 sp_to_vtk_mp_curl2d (A, space_mag, geometry_mec, method_data.nsub, ['B_degree=' num2str(method_data.degree(1)) '_nsub=' num2str(method_data.nsub(1))], 'B');
+return
 sp_to_vtk (u, space_mec, geometry_mec, method_data.nsub, ['u_degree=' num2str(method_data.degree(1)) '_nsub=' num2str(method_data.nsub(1))], 'u', 'value');
 
 % plot deformed geometry, scale u

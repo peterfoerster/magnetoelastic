@@ -16,13 +16,10 @@
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
 
-function varargout = op_wmec1d (spw, spv, msh, b, rho, E, A, I)
-   % (ncomp x rdim x msh_col.nqn x nsh_max x msh_col.nel)
-   derw = reshape(spw.shape_function_gradients(1,1,:,:), 1, msh.nqn, spw.nsh_max, msh.nel);
-   derv = reshape(spv.shape_function_gradients(1,1,:,:), 1, msh.nqn, spv.nsh_max, msh.nel);
-   % (ncomp x)? (rdim x rdim x msh_col.nqn x nsh_max x msh_col.nel)
-   der2w = reshape(spw.shape_function_hessians(2,1,1,:,:), 1, msh.nqn, spw.nsh_max, msh.nel);
-   der2v = reshape(spv.shape_function_hessians(2,1,1,:,:), 1, msh.nqn, spv.nsh_max, msh.nel);
+function varargout = op_wmec1d_w1 (spw, spv, msh, b, rho, E, A, I)
+   % (ncomp x msh_col.nqn x nsh_max x msh_col.nel)
+   derw = reshape(spw.shape_function_gradients, 1, msh.nqn, spw.nsh_max, msh.nel);
+   derv = reshape(spv.shape_function_gradients, 1, msh.nqn, spv.nsh_max, msh.nel);
 
    rows   = zeros(msh.nel*spw.nsh_max*spv.nsh_max,1);
    cols   = zeros(msh.nel*spw.nsh_max*spv.nsh_max,1);
@@ -36,18 +33,12 @@ function varargout = op_wmec1d (spw, spv, msh, b, rho, E, A, I)
          derw_iel = reshape(derw(:,:,1:spw.nsh(iel),iel), 1, msh.nqn, 1, spw.nsh(iel));
          derv_iel = reshape(derv(:,:,1:spv.nsh(iel),iel), 1, msh.nqn, spv.nsh(iel), 1);
 
-         der2w_iel = reshape(der2w(:,:,1:spw.nsh(iel),iel), 1, msh.nqn, 1, spw.nsh(iel));
-         der2v_iel = reshape(der2v(:,:,1:spv.nsh(iel),iel), 1, msh.nqn, spv.nsh(iel), 1);
-
          jacdet_iel = reshape(jacdet_weights(:,iel), [1,msh.nqn,1,1]);
 
-         tmp1 = bsxfun (@times, derw_iel, derv_iel);
-         tmp1 = bsxfun (@times, 1/2*E*A*jacdet_iel, tmp1);
+         tmp = bsxfun (@times, derw_iel, derv_iel);
+         tmp = bsxfun (@times, 1/2*E*A*jacdet_iel, tmp);
 
-         tmp2 = bsxfun (@times, der2w_iel, der2v_iel);
-         tmp2 = bsxfun (@times, 1/2*E*I*jacdet_iel, tmp2);
-
-         values(ncounter+(1:spw.nsh(iel)*spv.nsh(iel))) = reshape(sum(tmp1 + tmp2, 2), spv.nsh(iel), spw.nsh(iel));
+         values(ncounter+(1:spw.nsh(iel)*spv.nsh(iel))) = reshape(sum(tmp, 2), spv.nsh(iel), spw.nsh(iel));
 
          [rows_loc, cols_loc] = ndgrid (spv.connectivity(:,iel), spw.connectivity(:,iel));
          rows(ncounter+(1:spw.nsh(iel)*spv.nsh(iel))) = rows_loc;
@@ -55,7 +46,7 @@ function varargout = op_wmec1d (spw, spv, msh, b, rho, E, A, I)
          ncounter = ncounter + spw.nsh(iel)*spv.nsh(iel);
 
       else
-         warning ('geopdes:jacdet_zero_at_quad_node', 'op_wmec1d: singular map in element number %d', iel)
+         warning ('geopdes:jacdet_zero_at_quad_node', 'op_wmec1d_w1: singular map in element number %d', iel)
       end
    end
 
@@ -66,6 +57,6 @@ function varargout = op_wmec1d (spw, spv, msh, b, rho, E, A, I)
       varargout{2} = cols(1:ncounter);
       varargout{3} = values(1:ncounter);
    else
-      error ('op_wmec1d: wrong number of output arguments')
+      error ('op_wmec1d_w1: wrong number of output arguments')
    end
 end

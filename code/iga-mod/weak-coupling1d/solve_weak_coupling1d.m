@@ -51,26 +51,28 @@ function [geometry, msh, space, w] = solve_weak_coupling1d (problem_data, method
    end
 
    geometry = geo_load (geo_name);
-   [knots, zeta] = kntrefine (geometry.nurbs.knots, nsub-1, degree, regularity);
-   rule     = msh_gauss_nodes (nquad);
+   % two one-dimensional meshes
+   [knots1, zeta] = kntrefine (geometry.nurbs.knots, nsub(1)-1, degree(1), regularity(1));
+   rule     = msh_gauss_nodes (nquad(1));
    [qn, qw] = msh_set_quad_nodes (zeta, rule);
-   msh      = msh_cartesian (zeta, qn, qw, geometry);
+   msh1     = msh_cartesian (zeta, qn, qw, geometry, 'boundary', true, 'der2', true);
 
-   % one two-dimensional scalar space
-   % space = sp_bspline (knots, degree, msh);
-   % one two-dimensional vector space
-   sp_scalar = space = sp_bspline (knots, degree, msh);
-   scalar_spaces = cell(msh.rdim, 1);
-   for idim=1:msh.rdim
-     scalar_spaces{idim} = sp_scalar;
-   end
-   space = sp_vector (scalar_spaces, msh);
+   [knots2, zeta] = kntrefine (geometry.nurbs.knots, nsub(2)-1, degree(2), regularity(2));
+   rule     = msh_gauss_nodes (nquad(2));
+   [qn, qw] = msh_set_quad_nodes (zeta, rule);
+   msh2     = msh_cartesian (zeta, qn, qw, geometry, 'boundary', true, 'der2', true);
 
-   % assemble matrix
-   mat = op_wmec1d_tp (space, space, msh, b, rho, E, A, I);
+   % two one-dimensional scalar spaces
+   space1 = sp_bspline (knots1, degree(1), msh1);
+   space2 = sp_bspline (knots2, degree(2), msh2);
+
+   % assemble matrices
+   mat1 = op_wmec1d_w1_tp (space1, space1, msh1, b, rho, E, A, I);
+   mat2 = op_wmec1d_w2_tp (space2, space2, msh2, b, rho, E, A, I);
+
    % assemble rhs
-   rhs = op_l_v_tp (space, msh, B, A, b);
-
+   rhs1 = op_l_v1_tp (space1, msh1, B, A, b);
+keyboard
    % Dirichlet boundary conditions
    w = zeros(space.ndof, 1);
    keyboard

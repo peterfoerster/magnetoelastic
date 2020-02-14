@@ -4,7 +4,6 @@ pkg load geopdes;
 % specify problem and material data
 [problem_data, method_data] = setup_problem1d();
 
-% need to modify weak form to include double integral?
 tic;
 [geometry, msh, space, w] = solve_weak_coupling1d (problem_data, method_data);
 fprintf('\ntime elapsed for solution: %d min\n', toc/60);
@@ -12,7 +11,7 @@ fprintf('\ntime elapsed for solution: %d min\n', toc/60);
 % plot deformation
 x = linspace(0, problem_data.l, 10);
 [ew, F] = sp_eval (w, space, geometry, {x, 0});
-plot(x, ew(1,:));
+plot(x, ew(1:space.ndof));
 return
 % plot deformed geometry, scale u
 u_plot = u * 1e3;

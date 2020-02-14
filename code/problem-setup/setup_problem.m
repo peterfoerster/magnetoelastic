@@ -6,7 +6,7 @@ function [problem_data, method_data] = setup_problem (geometry_file)
 
    % diagonal components of permeability tensor, in order, as cell array of function handles
    mu11 = 3.77e-6;
-   mu22 = 1.012e-6;
+   mu22 = 1.012e-5;
    problem_data.mu = {@(x,y,iptc) compute_mu(x, y, iptc, mu11), @(x,y,iptc) compute_mu(x, y, iptc, mu22)};
 
    % coils defined via rectangles with homogeneous current density
@@ -50,11 +50,11 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    problem_data.f = {@(x,y,iptc) compute_f(x, y, iptc, e11/mu11), @(x,y,iptc) compute_f(x, y, iptc, e21/mu11), ...
                      @(x,y,iptc) compute_f(x, y, iptc, e62/mu22)};
 
-   method_data.degree     = [3 3];
+   method_data.degree     = [2 2];
    % degree-1
    method_data.regularity = method_data.degree-1;
    % to be determined by convergence study
-   method_data.nsub       = [32 32];
+   method_data.nsub       = [128 128];
    % degree+1
    method_data.nquad      = method_data.degree+1;
 end

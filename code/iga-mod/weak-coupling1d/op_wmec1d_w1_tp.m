@@ -16,16 +16,16 @@
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
 
-function varargout = op_wmec1d_tp (spw, spv, msh, b, rho, E, A, I)
+function varargout = op_wmec1d_w1_tp (spw, spv, msh, b, rho, E, A, I)
 
    mat = spalloc (spv.ndof, spw.ndof, 3*spw.ndof);
 
    for iel=1:msh.nel_dir(1)
       msh_col = msh_evaluate_col (msh, iel);
-      spw_col = sp_evaluate_col (spw, msh_col, 'value', false, 'gradient', true, 'hessian', true);
-      spv_col = sp_evaluate_col (spv, msh_col, 'value', false, 'gradient', true, 'hessian', true);
+      spw_col = sp_evaluate_col (spw, msh_col, 'value', false, 'gradient', true);
+      spv_col = sp_evaluate_col (spv, msh_col, 'value', false, 'gradient', true);
 
-      mat = mat + op_wmec1d (spw_col, spv_col, msh_col, b, rho, E, A, I);
+      mat = mat + op_wmec1d_w1 (spw_col, spv_col, msh_col, b, rho, E, A, I);
    end
 
    if (nargout == 1)
