@@ -105,7 +105,7 @@ for iref=nmnn_sides_mag
    rhs_mag(space_mag.boundary.dofs) = rhs_mag(space_mag.boundary.dofs) + rhs_mag_nmnn;
 end
 A = zeros(space_mag.ndof,1);
-[A_drchlt, drchlt_dofs_mag] = sp_drchlt_l2_proj (space_mag, msh_mag, h_mag, drchlt_sides_mag);
+[A_drchlt, drchlt_dofs_mag] = sp_drchlt_l2_proj_mod (space_mag, msh_mag, h_mag, drchlt_sides_mag);
 A(drchlt_dofs_mag) = A_drchlt;
 int_dofs_mag = setdiff(1:space_mag.ndof, drchlt_dofs_mag);
 rhs_mag(int_dofs_mag) = rhs_mag(int_dofs_mag) - B_mat(int_dofs_mag,drchlt_dofs_mag) * A_drchlt;
@@ -123,7 +123,7 @@ for iref=nmnn_sides_mec
    rhs_mec(space_mec.boundary.dofs) = rhs_mec(space_mec.boundary.dofs) + rhs_mec_nmnn;
 end
 u = zeros(space_mec.ndof,1);
-[u_drchlt, drchlt_dofs_mec] = sp_drchlt_l2_proj (space_mec, msh_mec, h_mec, drchlt_sides_mec);
+[u_drchlt, drchlt_dofs_mec] = sp_drchlt_l2_proj_mod (space_mec, msh_mec, h_mec, drchlt_sides_mec);
 u(drchlt_dofs_mec) = u_drchlt;
 int_dofs_mec = setdiff(1:space_mec.ndof, drchlt_dofs_mec);
 rhs_mec(int_dofs_mec) = rhs_mec(int_dofs_mec) - A_mat(int_dofs_mec,drchlt_dofs_mec) * u_drchlt;
