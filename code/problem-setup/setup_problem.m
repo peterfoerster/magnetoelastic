@@ -54,7 +54,7 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    % degree-1
    method_data.regularity = method_data.degree-1;
    % to be determined by convergence study
-   method_data.nsub       = [128 128];
+   method_data.nsub       = [32 32];
    % degree+1
    method_data.nquad      = method_data.degree+1;
 end

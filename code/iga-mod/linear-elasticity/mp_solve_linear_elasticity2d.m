@@ -98,7 +98,7 @@ end
 
 % Apply Dirichlet boundary conditions
 u = zeros (space.ndof, 1);
-[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h_mec, drchlt_sides_mec);
+[u_drchlt, drchlt_dofs] = sp_drchlt_l2_proj_mod (space, msh, h_mec, drchlt_sides_mec);
 u(drchlt_dofs) = u_drchlt;
 
 int_dofs = setdiff (1:space.ndof, drchlt_dofs);

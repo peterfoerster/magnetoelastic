@@ -1,7 +1,3 @@
-% SP_DRCHLT_L2_PROJ: assign the degrees of freedom of Dirichlet boundaries through an L2 projection, in multipatch geometries.
-%
-%   [u, dofs] = sp_drchlt_l2_proj (sp, msh, h, refs)
-%
 % INPUT:
 %
 %  sp:         object representing the multipatch space of trial functions (see sp_multipatch)

@@ -10,7 +10,8 @@ omega = 2*pi*50;
 [problem_data, method_data] = setup_problem_fd (geometry_file, omega);
 
 tic;
-[geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_coupling2d_fd (problem_data, method_data);
+% [geometry_mec, msh_mec, space_mec, u, msh_mag, space_mag, A] = mp_solve_coupling2d_fd (problem_data, method_data);
+% [geometry_mec, msh_mec, space_mec, msh_mag, space_mag] = mp_rebuild_coupling2d_fd (problem_data, method_data);
 % [geometry_mec, msh_mag, space_mag, A] = mp_solve_magnetoquasistatics2d (problem_data, method_data);
 % [geometry_mec, msh_mag, space_mag] = mp_rebuild_magnetoquasistatics2d (problem_data, method_data);
 fprintf('\ntime elapsed for solution: %d min\n', toc/60);
@@ -32,6 +33,7 @@ if (mechanic)
       figure(it);
       geometry_def = geo_deform_mp (u_plot, space_mec, geometry_mec);
       nrbplot(geometry_def(5).nurbs, method_data.nsub);
+      % nrbkntplot(geometry_def(5).nurbs);
       axis([0 4 2.5 4.5]);
       shading faceted; view(2);
       set(gcf, 'Position', get(0, 'Screensize'));
