@@ -14,6 +14,7 @@ function [problem_data, method_data] = setup_problem1d ()
    problem_data.E   = 25e9;
    problem_data.I   = problem_data.b^3/12;
    problem_data.A   = problem_data.b^2;
+   % coupling coefficient?
    problem_data.D   = 298e3;
    problem_data.B   = 1;
 

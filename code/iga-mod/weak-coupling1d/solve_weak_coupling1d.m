@@ -71,30 +71,23 @@ function [geometry, msh, space, w] = solve_weak_coupling1d (problem_data, method
    mat2 = op_wmec1d_w2_tp (space2, space2, msh2, b, rho, E, A, I);
 
    % assemble rhs
-   rhs1 = op_l_v1_tp (space1, msh1, B, A, b);
-keyboard
-   % Dirichlet boundary conditions
-   w = zeros(space.ndof, 1);
+   rhs1 = op_l_v1_tp (space1, msh1, D, B, A);
+   rhs2 = op_l_v2_tp (space1, msh1, D, B, b);
    keyboard
-   [w_drchlt, drchlt_dofs] = sp_drchlt_l2_proj (space, msh, h, drchlt_sides);
-   w(drchlt_dofs) = w_drchlt;
 
-   int_dofs = setdiff (1:space.ndof, drchlt_dofs);
-   rhs(int_dofs) = rhs(int_dofs) - mat(int_dofs, drchlt_dofs)*w_drchlt;
+% continue with boundary conditions
 
-   w(int_dofs) = mat(int_dofs, int_dofs) \ rhs(int_dofs);
+% Apply homogeneous 1st Dirichlet boundary conditions
+%  and 1st Neumann boundary conditions
+drchlt_dofs = [];
+for iside = 1:2*msh.ndim
+  if (drchlt1_ends(iside))
+    drchlt_dofs = [drchlt_dofs, sp.boundary(iside).dofs];
+  elseif (nmnn1_ends(iside))
+    rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) + P;
+  end
+end
 
-% % Apply homogeneous 1st Dirichlet boundary conditions
-% %  and 1st Neumann boundary conditions
-% drchlt_dofs = [];
-% for iside = 1:2*msh.ndim
-%   if (drchlt1_ends(iside))
-%     drchlt_dofs = [drchlt_dofs, sp.boundary(iside).dofs];
-%   elseif (nmnn1_ends(iside))
-%     rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) + P;
-%   end
-% end
-%
 % % Apply 2nd Dirichlet boundary conditions by using the Lagrange multipliers method
 % %  and 2nd Neumann boundary conditions
 % n_d2 = sum (drchlt2_ends);

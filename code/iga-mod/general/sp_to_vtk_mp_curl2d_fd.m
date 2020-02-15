@@ -25,7 +25,7 @@ function sp_to_vtk_mp_curl2d_fd (A, space, geometry, npts, filename, fieldname, 
          if(isempty(space.dofs_ornt))
             sp_to_vtk_curl2d (A_td(space.gnum{iptc}), space.sp_patch{iptc}, geometry(iptc), npts, filename_ptc, fieldname);
          else
-            sp_to_vtk (A_td(space.gnum{iptc}) .* space.dofs_ornt{iptc}', space.sp_patch{iptc}, geometry(iptc), npts, filename_ptc, fieldname);
+            sp_to_vtk_curl2d (A_td(space.gnum{iptc}) .* space.dofs_ornt{iptc}', space.sp_patch{iptc}, geometry(iptc), npts, filename_ptc, fieldname);
          end
       end
    end

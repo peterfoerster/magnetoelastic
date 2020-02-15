@@ -39,7 +39,6 @@
 %  geometry:      array of geometry structures (see geo_load)
 %  msh_mec/mag:   multipatch mesh, consisting of several Cartesian meshes (see msh_multipatch)
 %  space_mec/mag: multipatch space, formed by several tensor product spaces plus the connectivity (see sp_multipatch)
-%  u/A:           the computed degrees of freedom
 
 function [geometry_mec, msh_mec, space_mec, msh_mag, space_mag] = mp_rebuild_coupling2d (problem_data, method_data)
 data_names=fieldnames(problem_data);

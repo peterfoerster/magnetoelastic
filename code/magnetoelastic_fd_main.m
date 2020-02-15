@@ -29,6 +29,7 @@ if (mechanic)
    save(['u_degree=' num2str(method_data.degree(1)) '_nsub=' num2str(method_data.nsub(1)) '.mat'], 'u');
    i_cmp = complex(0, 1);
    for it=1:length(T)
+      % subtract preload first?
       u_plot = real(u * exp(i_cmp*omega*T(it))) * 1e3;
       figure(it);
       geometry_def = geo_deform_mp (u_plot, space_mec, geometry_mec);

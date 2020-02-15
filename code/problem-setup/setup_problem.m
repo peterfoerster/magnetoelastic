@@ -10,12 +10,10 @@ function [problem_data, method_data] = setup_problem (geometry_file)
    problem_data.mu = {@(x,y,iptc) compute_mu(x, y, iptc, mu11), @(x,y,iptc) compute_mu(x, y, iptc, mu22)};
 
    % coils defined via rectangles with homogeneous current density
-   % v1
    coils.bll = [0.5 2];
    coils.bur = [2.5 2.5];
    coils.tll = [0.5 4.5];
    coils.tur = [2.5 5];
-
    % 100 windings with 5 Ampere each
    coils.current = 100*5;
    problem_data.f_mag = @(x,y,iptc) compute_f_mag(x, y, iptc, coils);

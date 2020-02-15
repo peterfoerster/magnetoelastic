@@ -1,9 +1,8 @@
 % INPUT:
 %
-%     u:         vector of dof weights for the displacement
-%     space:     structure representing the space of discrete functions
-%     geometry:  geometry structure. It must contain a nurbs substructure
-%                 as given in the NURBS toolbox.
+%     u:        vector of dof weights for the displacement
+%     space:    structure representing the space of discrete functions
+%     geometry: geometry structure. It must contain a nurbs substructure as given in the NURBS toolbox.
 %
 % OUTPUT:
 %

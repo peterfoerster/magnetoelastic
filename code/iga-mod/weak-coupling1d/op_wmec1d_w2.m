@@ -16,7 +16,7 @@
 %   cols:   column indices of the nonzero entries
 %   values: values of the nonzero entries
 
-function varargout = op_wmec1d (spw, spv, msh, b, rho, E, A, I)
+function varargout = op_wmec1d_w2 (spw, spv, msh, b, rho, E, A, I)
    % (rdim x rdim x msh_col.nqn x nsh_max x msh_col.nel)
    der2w = reshape(spw.shape_function_hessians(1,1,:,:), 1, msh.nqn, spw.nsh_max, msh.nel);
    der2v = reshape(spv.shape_function_hessians(1,1,:,:), 1, msh.nqn, spv.nsh_max, msh.nel);
