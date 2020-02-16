@@ -5,19 +5,15 @@ pkg load geopdes;
 [problem_data, method_data] = setup_problem1d();
 
 tic;
-[geometry, msh, space, w] = solve_weak_coupling1d (problem_data, method_data);
+[geometry, msh1, space1, msh2, space2, w] = solve_weak_coupling1d (problem_data, method_data);
 fprintf('\ntime elapsed for solution: %d min\n', toc/60);
 
 % plot deformation
-x = linspace(0, problem_data.l, 10);
-[ew, F] = sp_eval (w, space, geometry, {x, 0});
-plot(x, ew(1:space.ndof));
-return
-% plot deformed geometry, scale u
-u_plot = u * 1e3;
-figure(2);
-geometry_def = geo_deform_mp (u_plot, space_mec, geometry_mec);
-nrbplot(geometry_def(5).nurbs, method_data.nsub);
-xrt = nrbeval(geometry_def(5).nurbs, {1, 1})
-xrb = nrbeval(geometry_def(5).nurbs, {1, 0})
-shading interp; view(2);
+npts = 10;
+[ew1, F1] = sp_eval (w(1:space1.ndof), space1, geometry, npts);
+plot(linspace(0, problem_data.l, npts), ew1);
+
+figure;
+npts = 10;
+[ew2, F2] = sp_eval (w(space1.ndof+1:space1.ndof+space2.ndof), space2, geometry, npts);
+plot(linspace(0, problem_data.l, npts), ew2);

@@ -23,7 +23,6 @@
 %    - A:            cross-sectional area
 %    - B:            magnetic flux density
 %    - g:            function for Neumann boundary conditions
-%    - h:            function for Dirichlet boundary conditions
 %
 %  method_data: a structure with discretization data. Its fields are:
 %    - degree:     degree of the spline functions.
@@ -39,7 +38,7 @@
 %  space:    space object that defines the discrete basis functions (see sp_scalar)
 %  w:        the computed degrees of freedom
 
-function [geometry, msh, space, w] = solve_weak_coupling1d (problem_data, method_data)
+function [geometry, msh1, space1, msh2, space2, w] = solve_weak_coupling1d (problem_data, method_data)
 
    data_names = fieldnames (problem_data);
    for iopt=1:numel(data_names)
@@ -51,6 +50,7 @@ function [geometry, msh, space, w] = solve_weak_coupling1d (problem_data, method
    end
 
    geometry = geo_load (geo_name);
+
    % two one-dimensional meshes
    [knots1, zeta] = kntrefine (geometry.nurbs.knots, nsub(1)-1, degree(1), regularity(1));
    rule     = msh_gauss_nodes (nquad(1));
@@ -72,49 +72,52 @@ function [geometry, msh, space, w] = solve_weak_coupling1d (problem_data, method
 
    % assemble rhs
    rhs1 = op_l_v1_tp (space1, msh1, D, B, A);
-   rhs2 = op_l_v2_tp (space1, msh1, D, B, b);
-   keyboard
+   rhs2 = op_l_v2_tp (space2, msh2, D, B, b);
 
-% continue with boundary conditions
+   % apply boundary conditions
+   drchlt1_dofs = [];
+   for iside=drchlt1_sides
+      drchlt1_dofs = [drchlt1_dofs, space1.boundary(iside).dofs];
+   end
+   % exchanged for secondary condition
+   % drchlt2_dofs = [];
+   % for iside=drchlt2_sides
+   %    drchlt2_dofs = [drchlt2_dofs, space2.boundary(iside).dofs];
+   % end
 
-% Apply homogeneous 1st Dirichlet boundary conditions
-%  and 1st Neumann boundary conditions
-drchlt_dofs = [];
-for iside = 1:2*msh.ndim
-  if (drchlt1_ends(iside))
-    drchlt_dofs = [drchlt_dofs, sp.boundary(iside).dofs];
-  elseif (nmnn1_ends(iside))
-    rhs(sp.boundary(iside).dofs) = rhs(sp.boundary(iside).dofs) + P;
-  end
-end
+   % apply secondary Neumann condition
+   % for iside=nmnn2_sides
+   %    msh2_side   = msh_boundary_side_from_interior (msh2, iside);
+   %    space2_side = sp_precompute (space2.constructor(msh2_side), msh2_side, 'gradient', true);
+   %    rhs2(space2_side.connectivity) = rhs2(space2_side.connectivity) - g(iside) * reshape (space2_side.shape_function_gradients(:,:,:), space2_side.nsh, 1);
+   % end
 
-% % Apply 2nd Dirichlet boundary conditions by using the Lagrange multipliers method
-% %  and 2nd Neumann boundary conditions
-% n_d2 = sum (drchlt2_ends);
-% C = sparse (numel(drchlt2_ends), sp.ndof);
-% for iside = 1:2*msh.ndim
-%   if (drchlt2_ends(iside) || nmnn2_ends(iside))
-%     msh_aux = msh_boundary_side_from_interior (msh, iside);
-%     sp_side = sp_precompute (sp.constructor (msh_aux), msh_aux, 'gradient', true);
-%
-%     if (drchlt2_ends(iside))
-%       C(iside, sp_side.connectivity) = reshape (sp_side.shape_function_gradients(:,:,:), 1, sp_side.nsh);
-%     elseif (nmnn2_ends(iside))
-%       rhs(sp_side.connectivity) = rhs(sp_side.connectivity) - ...
-%           g(iside) * reshape (sp_side.shape_function_gradients(:,:,:), sp_side.nsh, 1);
-%     end
-%   end
-% end
-% stiff_mat = [stiff_mat,         C(drchlt2_ends, :).'; ...
-%              C(drchlt2_ends,:), sparse(n_d2, n_d2)];
-% rhs(sp.ndof+(1:n_d2)) = 0;
-% u = zeros (sp.ndof + n_d2, 1);
-% int_dofs = setdiff (1:(sp.ndof+n_d2), drchlt_dofs);
-%
-% % Solve the static problem
-% K = stiff_mat(int_dofs, int_dofs);
-% F = rhs(int_dofs);
-% u(int_dofs) = K\F;
-% u = u(1:sp.ndof);
+   % apply secondary Dirichlet condition
+   nL = numel(drchlt2_sides);
+   L  = sparse (nL, space2.ndof);
+   for iside=drchlt2_sides
+      msh2_side   = msh_boundary_side_from_interior (msh2, iside);
+      space2_side = sp_precompute (space2.constructor (msh2_side), msh2_side, 'gradient', true);
+      L(iside, space2_side.connectivity) = reshape(space2_side.shape_function_gradients(:,:,:), 1, space2_side.nsh);
+   end
 
+   mat2 = [mat2, L(drchlt2_sides,:).';
+           L(drchlt2_sides,:), sparse(nL,nL)];
+   rhs2(space2.ndof+(1:nL)) = 0;
+
+   mat = [mat1, sparse(size(mat1,1), size(mat2,2));
+          sparse(size(mat2,1), size(mat1,2)), mat2];
+
+   rhs  = [rhs1; rhs2];
+
+   % solve the system
+   w = zeros(size(mat,2),1);
+   int_dofs1 = setdiff (1:space1.ndof, drchlt1_dofs);
+   int_dofs2 = 1:(space2.ndof+nL);
+   int_dofs  = [int_dofs1, space1.ndof+int_dofs2];
+
+   mat_dofs = mat(int_dofs, int_dofs);
+   rhs_dofs = rhs(int_dofs);
+   w(int_dofs) = mat_dofs\rhs_dofs;
+   w = w(1:(space1.ndof+space2.ndof));
 end
