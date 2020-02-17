@@ -1,5 +1,5 @@
 [Format]      =  4.0
-[Frequency]   =  50
+[Frequency]   =  0
 [Precision]   =  1e-008
 [MinAngle]    =  30
 [DoSmartMesh] =  1
