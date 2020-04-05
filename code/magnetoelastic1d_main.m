@@ -9,11 +9,16 @@ tic;
 fprintf('\ntime elapsed for solution: %d min\n', toc/60);
 
 % plot deformation
+figure(1);
 npts = 10;
 [ew1, F1] = sp_eval (w(1:space1.ndof), space1, geometry, npts);
 plot(linspace(0, problem_data.l, npts), ew1);
+xlabel('x');
+ylabel('w_1');
 
-figure;
+figure(2);
 npts = 10;
 [ew2, F2] = sp_eval (w(space1.ndof+1:space1.ndof+space2.ndof), space2, geometry, npts);
 plot(linspace(0, problem_data.l, npts), ew2);
+xlabel('x');
+ylabel('w_2');

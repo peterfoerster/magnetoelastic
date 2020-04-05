@@ -22,8 +22,8 @@ function varargout = op_wmec1d_w1_tp (spw, spv, msh, b, rho, E, A, I)
 
    for iel=1:msh.nel_dir(1)
       msh_col = msh_evaluate_col (msh, iel);
-      spw_col = sp_evaluate_col (spw, msh_col, 'value', false, 'gradient', true);
-      spv_col = sp_evaluate_col (spv, msh_col, 'value', false, 'gradient', true);
+      spw_col = sp_evaluate_col (spw, msh_col, 'value', false, 'gradient', true, 'hessian', true);
+      spv_col = sp_evaluate_col (spv, msh_col, 'value', true, 'gradient', true);
 
       mat = mat + op_wmec1d_w1 (spw_col, spv_col, msh_col, b, rho, E, A, I);
    end

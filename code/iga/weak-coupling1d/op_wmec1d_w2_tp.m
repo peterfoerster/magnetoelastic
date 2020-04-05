@@ -23,7 +23,7 @@ function varargout = op_wmec1d_w2_tp (spw, spv, msh, b, rho, E, A, I)
    for iel=1:msh.nel_dir(1)
       msh_col = msh_evaluate_col (msh, iel);
       spw_col = sp_evaluate_col (spw, msh_col, 'value', false, 'hessian', true);
-      spv_col = sp_evaluate_col (spv, msh_col, 'value', false, 'hessian', true);
+      spv_col = sp_evaluate_col (spv, msh_col, 'value', true, 'hessian', true);
 
       mat = mat + op_wmec1d_w2 (spw_col, spv_col, msh_col, b, rho, E, A, I);
    end

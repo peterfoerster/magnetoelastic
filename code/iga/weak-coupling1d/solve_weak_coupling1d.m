@@ -6,7 +6,7 @@
 %
 %     with w1(0,t) = w2(0,t) = 0   and   w2'(0,t) = 0,
 %
-%  where <rho * w'',v> = b^2 S (rho v * w'') dx1,
+%  where <rho * w'',v> = b^2 S rho( v1 * w1'' + v2 * w2'' ) dx1,
 %                a(w,v) = 1/2*E*A * S (w1' * v1') dx1 + 1/2*E*I * S (w2'' * v2'') dx1,
 %                <l,v>  = sum(D1k * Bk) * (A * S (v1') dx1 - b^3/2 * S (v2'') dx1).
 %
@@ -34,8 +34,8 @@
 % OUTPUT:
 %
 %  geometry: geometry structure (see geo_load)
-%  msh:      mesh object that defines the quadrature rule (see msh_2d)
-%  space:    space object that defines the discrete basis functions (see sp_scalar)
+%  msh1/2:   mesh objects that define the quadrature rules (see msh_2d)
+%  space1/2: space objects that define the discrete basis functions (see sp_scalar)
 %  w:        the computed degrees of freedom
 
 function [geometry, msh1, space1, msh2, space2, w] = solve_weak_coupling1d (problem_data, method_data)
@@ -74,16 +74,17 @@ function [geometry, msh1, space1, msh2, space2, w] = solve_weak_coupling1d (prob
    rhs1 = op_l_v1_tp (space1, msh1, D, B, A);
    rhs2 = op_l_v2_tp (space2, msh2, D, B, b);
 
-   % apply boundary conditions
+   % apply Dirichlet boundary conditions
    drchlt1_dofs = [];
    for iside=drchlt1_sides
       drchlt1_dofs = [drchlt1_dofs, space1.boundary(iside).dofs];
    end
-   % exchanged for secondary condition
+
    % drchlt2_dofs = [];
    % for iside=drchlt2_sides
    %    drchlt2_dofs = [drchlt2_dofs, space2.boundary(iside).dofs];
    % end
+   % int_dofs2 = setdiff(1:space2.ndof, drchlt2_dofs);
 
    % apply secondary Neumann condition
    % for iside=nmnn2_sides
@@ -100,20 +101,18 @@ function [geometry, msh1, space1, msh2, space2, w] = solve_weak_coupling1d (prob
       space2_side = sp_precompute (space2.constructor (msh2_side), msh2_side, 'gradient', true);
       L(iside, space2_side.connectivity) = reshape(space2_side.shape_function_gradients(:,:,:), 1, space2_side.nsh);
    end
-
    mat2 = [mat2, L(drchlt2_sides,:).';
            L(drchlt2_sides,:), sparse(nL,nL)];
    rhs2(space2.ndof+(1:nL)) = 0;
+   int_dofs2 = 1:(space2.ndof+nL);
 
    mat = [mat1, sparse(size(mat1,1), size(mat2,2));
           sparse(size(mat2,1), size(mat1,2)), mat2];
-
    rhs  = [rhs1; rhs2];
 
    % solve the system
    w = zeros(size(mat,2),1);
    int_dofs1 = setdiff (1:space1.ndof, drchlt1_dofs);
-   int_dofs2 = 1:(space2.ndof+nL);
    int_dofs  = [int_dofs1, space1.ndof+int_dofs2];
 
    mat_dofs = mat(int_dofs, int_dofs);

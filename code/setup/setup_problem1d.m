@@ -25,7 +25,7 @@ function [problem_data, method_data] = setup_problem1d ()
    method_data.degree     = [2 3];
    % degree-1
    method_data.regularity = method_data.degree-1;
-   method_data.nsub       = [1 1];
+   method_data.nsub       = [1 2^0];
    % degree+1
    method_data.nquad      = method_data.degree+1;
 end
